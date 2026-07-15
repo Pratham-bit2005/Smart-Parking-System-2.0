@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us - Smart Parking System</title>
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+ 
+:root {
+  --accent: #ceff00;
+  --accent-glow: rgba(206,255,0,0.45);
+  --bg: #0a0a0a;
+  --card: #111111;
+  --border: rgba(206,255,0,0.2);
+}
+ 
+body { background: var(--bg); color: #e0e0e0; }
+ 
+/* HERO */
+.hero {
+  height: 100vh;
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a') center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+ 
+.hero::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0;
+  height:2px;
+  background:var(--accent);
+  box-shadow:0 0 20px var(--accent-glow);
+}
+ 
+.hero h1 {
+  font-size: 60px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -1px;
+  animation: fadeDown 1.2s ease;
+}
+ 
+.hero p {
+  margin-top: 20px;
+  font-size: 19px;
+  max-width: 600px;
+  color: #aaa;
+  animation: fadeUp 1.5s ease;
+  line-height: 1.6;
+}
+ 
+.hero a {
+  margin-top: 32px;
+  padding: 13px 34px;
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 15px;
+  text-decoration: none;
+}
+ 
+.hero a:hover {
+  box-shadow: 0 0 28px var(--accent-glow);
+  transform: scale(1.05);
+}
+ 
+/* SECTIONS */
+.section1, .section2, .section3, .section4 { padding: 80px 10%; }
+ 
+.section1 h2, .section2 h2, .section3 h2, .section4 h2 {
+  text-align: center;
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--accent);
+  margin: 0 auto 50px auto;
+  padding: 14px 32px;
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 0 20px var(--accent-glow);
+  max-width: 460px;
+}
+ 
+/* TWO COLUMN */
+.about-container { display: flex; flex-wrap: wrap; align-items: center; gap: 40px; }
+.about-text { flex:1; }
+.about-text p { line-height: 1.8; font-size: 17px; color: #999; }
+.about-img { flex:1; }
+.about-img img { width:100%; border-radius:12px; border:1px solid var(--border); }
+ 
+/* FEATURES */
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:24px; }
+ 
+.card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 28px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.4s;
+}
+ 
+.card:hover {
+  transform: translateY(-8px);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+ 
+.card h3 { margin-bottom:12px; color:var(--accent); font-size:16px; font-weight:700; }
+.card p { color:#777; font-size:14px; line-height:1.6; }
+ 
+/* STATS */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+ 
+.stat-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 32px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.4s;
+  min-width: 160px;
+}
+ 
+.stat-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+ 
+.stat-card h1 { font-size: 40px; font-weight: 900; color: var(--accent); }
+.stat-card p { margin-top:8px; font-size:15px; color:#777; }
+ 
+/* MISSION VISION */
+.mv { display:flex; flex-wrap:wrap; gap:28px; }
+ 
+.mv-card {
+  flex:1;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.4s;
+}
+ 
+.mv-card h3 { margin-bottom:14px; color:var(--accent); font-size:20px; font-weight:700; }
+.mv-card p { color:#888; font-size:15px; line-height:1.7; }
+ 
+.mv-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+ 
+@keyframes fadeDown { from{opacity:0;transform:translateY(-50px);} to{opacity:1;transform:translateY(0);} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(50px);}  to{opacity:1;transform:translateY(0);} }
+ 
+@media(max-width:768px){ .hero h1{ font-size:40px; } }
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Smart Parking System</h1>
+    <p>Revolutionizing Urban Parking with Real-Time Slot Availability and Intelligent Monitoring</p>
+    <a href="Smart-Parking.html" class="link-btn">Explore More</a>
+</section>
+
+<!-- ABOUT -->
+<section class="section1">
+    <h2>Who We Are</h2>
+    <div class="about-container">
+        <div class="about-text">
+            <p>
+                Smart Parking System is an advanced solution developed to reduce parking 
+                congestion using IoT-based slot detection and real-time monitoring. The 
+                system allows users to check parking availability, reserve slots, and 
+                navigate easily to their destination. By improving parking efficiency, 
+                it helps save time, reduce fuel consumption, and enhance the overall 
+                urban transportation experience. “making parking smarter, faster, 
+                and more convenient.”
+            </p>
+        </div>
+        <div class="about-img">
+            <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d" alt="parking">
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section2">
+    <h2>Our Technology</h2>
+    <div class="features">
+        <div class="card">
+            <h3>Real-Time Monitoring</h3>
+            <p>Instant slot updates using IoT sensors.</p>
+        </div>
+        <div class="card">
+            <h3>Online Booking</h3>
+            <p>Reserve your parking slot anytime, anywhere.</p>
+        </div>
+        <div class="card">
+            <h3>Secure Payments</h3>
+            <p>Integrated digital payment solutions.</p>
+        </div>
+        <div class="card">
+            <h3>Data Analytics</h3>
+            <p>Smart insights for better parking management.</p>
+        </div>
+        <div class="card">
+            <h3>Automated Entry & Exit</h3>
+            <p>QR/RFID based smart access control for seamless vehicle movement.</p>
+        </div>
+        <div class="card">
+            <h3>EV Charging Integration</h3>
+            <p>Dedicated smart slots with electric vehicle charging support.</p>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="section2">
+    <h2>Our Impact</h2>
+    <div class="stats">
+        <div class="stat-card">
+            <h1>500+</h1>
+            <p>Slots Managed</p>
+        </div>
+        <div class="stat-card">
+            <h1>1000+</h1>
+            <p>Happy Users</p>
+        </div>
+        <div class="stat-card">
+            <h1>40%</h1>
+            <p>Time Saved</p>
+        </div>
+        <div class="stat-card">
+            <h1>30%</h1>
+            <p>Fuel Reduction</p>
+        </div>
+    </div>
+</section>
+
+<!-- MISSION VISION -->
+<section class="section4">
+    <h2>Mission & Vision</h2>
+    <div class="mv">
+        <div class="mv-card">
+            <h3>Our Mission</h3>
+            <p>
+                Our Mission is to provide a smart, reliable, and eco-friendly parking 
+                management systemthat reduces congestion and enhances urban mobility.
+            </p>
+        </div>
+        <div class="mv-card">
+            <h3>Our Vision</h3>
+            <p>
+                Our Vision is to contribute to smart city development by implementing
+                intelligent parking solutions powered by technology and innovation.
+            </p>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

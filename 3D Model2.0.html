@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+:root{
+  --bg:#0a0a0a;
+  --card:#111111;
+  --accent:#ceff00;
+  --accent-glow:rgba(206,255,0,0.45);
+  --muted:#888;
+  --success:#10b981;
+  --danger:#ef4444;
+  --glass: rgba(206,255,0,0.03);
+  --border: rgba(206,255,0,0.2);
+}
+ 
+*{box-sizing:border-box}
+html,body{
+ height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",
+ Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#e6eef6
+}
+ 
+/* TOPBAR */
+.topbar{
+ display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;
+ background:rgba(10,10,10,0.95);border-bottom:1px solid var(--border);
+ backdrop-filter:blur(8px);
+}
+ 
+.topbar h1{font-size:1.1rem;margin:0;font-weight:800;color:var(--accent);}
+ 
+.controls button{
+ margin-left:.5rem;padding:.45rem .9rem;border-radius:8px;border:1px solid var(--accent);
+ background:transparent;color:var(--accent);cursor:pointer;font-weight:700;
+ font-size:13px;transition:0.3s;
+}
+.controls button:hover{background:var(--accent);color:#000;box-shadow:0 0 14px var(--accent-glow);}
+.controls button[disabled]{opacity:.4;cursor:not-allowed}
+ 
+/* LAYOUT */
+main{
+  display:grid;grid-template-columns:320px 1fr 320px;
+  gap:1rem;padding:1rem;align-items:start
+}
+@media (max-width:1000px){main{grid-template-columns:1fr;}}
+ 
+.panel{
+  background:var(--card);padding:1rem;border-radius:12px;
+  border:1px solid rgba(255,255,255,0.05);
+  box-shadow:0 6px 18px rgba(0,0,0,0.5)
+}
+ 
+.stats{ display:flex;flex-direction:column;gap:.5rem;font-size:.95rem }
+ 
+/* LEGEND CHIPS */
+.parking-area .legend{display:flex;gap:.6rem;margin-bottom:.6rem}
+ 
+.chip{padding:.25rem .6rem;border-radius:999px;font-size:.85rem}
+.chip.free{background:rgba(206,255,0,0.08);border:1px solid rgba(206,255,0,0.3);color:var(--accent)}
+.chip.occupied{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444}
+.chip.reserved{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981}
+ 
+/* SLOTS GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px}
+ 
+.slot{
+  height:80px;border-radius:10px;display:flex;flex-direction:column;justify-content:center;
+  align-items:center;padding:.5rem;border:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;position:relative;user-select:none;transition:transform .15s
+}
+.slot:hover{transform:translateY(-4px)}
+.slot .label{font-weight:700}
+.slot .meta{font-size:.8rem;color:var(--muted);margin-top:.25rem}
+ 
+.slot.free{
+  background:linear-gradient(180deg,rgba(206,255,0,0.35),rgba(206,255,0,0.18));
+  border:2px solid rgba(206,255,0,0.7);color:#000;
+}
+.slot.occupied{
+  background:linear-gradient(180deg,rgba(239,68,68,0.45),rgba(239,68,68,0.25));
+  border:2px solid rgba(239,68,68,0.8);color:#fff;
+}
+.slot.reserved{
+  background:linear-gradient(180deg,rgba(59,130,246,0.45),rgba(59,130,246,0.25));
+  border:2px solid rgba(59,130,246,0.8);color:#fff;
+}
+ 
+.slot .badge{
+ position:absolute;top:6px;right:6px;padding:2px 6px;border-radius:5px;
+ font-size:0.7rem;background:rgba(0,0,0,0.3);color:#fff
+}
+ 
+/* FORMS */
+.actions h2{margin-top:0;color:var(--accent);font-weight:800;}
+form label{display:block;margin:.45rem 0;margin-top:13px;color:#aaa;font-size:13px;}
+ 
+input[type="text"],input[type="number"]{
+ width:100%;padding:.5rem .7rem;border-radius:8px;
+ border:1px solid rgba(206,255,0,0.2);
+ background:rgba(206,255,0,0.04);color:inherit;outline:none;
+ caret-color:var(--accent);transition:0.3s;
+}
+input[type="text"]:focus,input[type="number"]:focus{
+  border-color:var(--accent);box-shadow:0 0 10px rgba(206,255,0,0.3);
+}
+ 
+.form-actions{display:flex;gap:.5rem;margin-top:.5rem}
+.form-actions button{
+ flex:1;padding:.6rem;border-radius:8px;border:none;
+ background:var(--accent);color:#000;
+ font-weight:800;cursor:pointer;transition:0.3s;
+ margin-top:12px;font-size:13px;
+}
+.form-actions button:hover{transform:scale(1.03);box-shadow:0 0 14px var(--accent-glow);}
+ 
+.form-actions button[type="button"]{
+ background:linear-gradient(45deg,#ef4444,#dc2626);
+ color:#fff;
+}
+.form-actions button[type="button"]:hover{
+  box-shadow:0 0 14px rgba(239,68,68,0.6);
+}
+ 
+/* NOTIFICATIONS */
+.notifications{margin-top:1rem;min-height:3rem}
+.notify{padding:.5rem .75rem;border-radius:8px;margin-bottom:.5rem;font-size:14px;}
+.notify.info{background:rgba(99,102,241,0.08);border-left:3px solid #6366f1}
+.notify.warn{background:rgba(245,158,11,0.06);border-left:3px solid #f59e0b}
+.notify.success{background:rgba(206,255,0,0.06);border-left:3px solid var(--accent);color:var(--accent)}
+.notify.error{background:rgba(239,68,68,0.06);border-left:3px solid #ef4444}
+ 
+.footer{padding:1rem;text-align:center;color:var(--muted);font-size:13px;
+  border-top:1px solid rgba(206,255,0,0.1);}
+ 
+/* STATS PANEL */
+.panel.stats{display:flex;flex-direction:column;gap:.5rem}
+.panel.stats div{
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(8px);border-radius:10px;
+  padding:.6rem .9rem;display:flex;justify-content:space-between;
+  align-items:center;font-weight:600;
+  box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:14px;margin-bottom:3px;
+}
+.panel.stats div.total{border:1px solid rgba(255,255,255,0.15);color:#ccc;box-shadow:0 0 8px rgba(255,255,255,0.08)}
+.panel.stats div.available{border:1px solid rgba(206,255,0,0.5);color:var(--accent);box-shadow:0 0 8px rgba(206,255,0,0.2)}
+.panel.stats div.occupied{border:1px solid rgba(239,68,68,0.5);color:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.2)}
+.panel.stats div.reserved{border:1px solid rgba(59,130,246,0.5);color:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.2)}
+ 
+/* NPR / SEARCH BUTTONS */
+.link-btn{
+  display:inline-block;padding:11px 50px;
+  background:var(--accent);color:#000;text-decoration:none;
+  border-radius:8px;transition:0.3s ease;font-weight:800;
+  margin-top:6px;margin-bottom:5px;white-space:nowrap;border:none;
+  text-align:center;cursor:pointer;font-size:14px;
+}
+.link-btn:hover{transform:scale(1.04);box-shadow:0 0 16px var(--accent-glow);}
+ 
+.label-text{color:var(--accent);font-weight:700;}
+ 
+/* INSTA BOOK */
+.insta-btn{
+  display:inline-block;padding:11px 80px;
+  background:var(--accent);color:#000;text-decoration:none;
+  border-radius:8px;transition:0.3s ease;font-weight:800;
+  margin-top:12px;white-space:nowrap;font-size:14px;
+}
+.insta-btn:hover{transform:scale(1.04);box-shadow:0 0 16px var(--accent-glow);}
+ 
+/* NAVIGATE YOUR SLOT */
+*{margin:0;padding:0;box-sizing:border-box;}
+ 
+.container{padding:10px}
+ 
+#showNavBtn{
+  display:inline-block;margin:20px auto;padding:14px 20px;
+  background:var(--accent);color:#000;border:none;
+  border-radius:8px;font-weight:800;cursor:pointer;
+  margin-top:-28px;transition:0.3s;font-size:14px;
+  margin-left: 580px; text-decoration: none;
+}
+#showNavBtn:hover{transform:scale(1.04);box-shadow:0 0 16px var(--accent-glow);}
+ 
+.nav-grid{
+  position:relative;width:600px;height:620px;
+  margin:20px auto;border:1px solid rgba(206,255,0,0.25);
+  border-radius:12px;padding:10px;
+  background:#0e0e0e;
+}
+ 
+.nav-entry,.nav-exit{
+  position:absolute;top:8px;width:90px;
+  text-align:center;color:var(--accent);font-weight:700;font-size:13px;
+}
+.nav-entry{left:12px}
+.nav-exit{right:12px;cursor:pointer}
+ 
+.nav-slots{
+  position:absolute;top:65px;left:10px;right:10px;bottom:10px;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);gap:25px;
+}
+ 
+.nav-slot{
+  width:70px;aspect-ratio:1/1;background:#1a1a1a;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;display:flex;justify-content:center;
+  align-items:center;cursor:pointer;font-size:12px;
+  transition:0.2s;height:70px;color:#aaa;
+}
+.nav-slot:hover{transform:scale(1.06);border-color:var(--accent);}
+.nav-slot.active{background:var(--accent);color:#000;font-weight:800;box-shadow:0 0 10px var(--accent-glow);}
+ 
+canvas{position:absolute;top:0;left:0;pointer-events:none;}
+
+
+
+#floatingNav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+
+    width: 380px;
+    background: rgb(22, 26, 15);
+
+    border: 2px solid #7ece22;
+    border-radius: 20px;
+
+    overflow: hidden;
+    box-shadow: 0 0 20px #7ece22;
+
+    z-index: 9999;
+}
+
+#dragBar {
+    height: 50px;
+    background: #7ece22;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 15px;
+    cursor: move;
+}
+
+.nav-title {
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#minimizeBtn {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+    color: black;
+}
+
+#miniNav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 220px;
+    padding: 15px;
+    background: #161a0f;
+    color: #7ece22;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #7ece22;
+    cursor: move;
+    display: none;
+    z-index: 9999;
+}
+
+#mapContainer {
+    width: 100%;
+    height: 220px;
+}
+
+#mapFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#navBody {
+    padding: 15px;
+}
+
+#distanceText {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+#openNavBtn,
+#closeNavBtn {
+    flex: 1;
+    padding: 12px;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#openNavBtn {
+    background: #7ece22;
+    color: black;
+    font-weight: bold;
+}
+
+#closeNavBtn {
+    background: #2a2a2a;
+    color: white;
+}
+
+</style>
+
+
+<!-- Firebase Library -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+
+<!-- OCR Library -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+</head>
+
+
+
+<!-- TOPBAR -->
+<body>
+<header class="topbar">
+  <h1>Smart Parking System</h1>
+  <div class="controls">
+    <button id="simulateToggle">Start Simulation</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</header>
+
+
+
+<!-- STATS PANEL -->
+<main>
+<section class="panel stats">
+  <div class="total"><strong>Total slots:</strong> <span id="totalSlots">0</span></div>
+  <div class="available"><strong>Available:</strong> <span id="availableCount">0</span></div>
+  <div class="occupied"><strong>Occupied:</strong> <span id="occupiedCount">0</span></div>
+  <div class="reserved"><strong>Reserved:</strong> <span id="reservedCount">0</span></div>
+
+
+
+
+<!-- SEARCH NUMBER PLATE -->
+<h3 style="font-size:16px; font-weight:600; margin-bottom:-1px; text-align:center; color:white;margin-top: 35px;">
+Number Plate Recognition</h3>
+
+<!-- NPR Section -->
+<div class="npr-section" style="margin-top:20px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+
+
+<!-- Button to show input -->
+<button id="searchPlateBtn" class="link-btn">Scan Number Plate</button>
+
+
+<!-- Hidden input area -->
+<div id="plateSearchArea" style="display:none; width:100%; max-width:300px;">
+  <input type="text" id="plateInput" placeholder="Enter Plate Number"
+  style="padding:10px; font-size:16px; border-radius:8px; border:1px solid #00bfff; width:100%;"
+  onkeydown="handleEnter(event)">
+</div>
+
+
+<!-- Result Box -->
+<div id="plateResultBox" style="display:none; width:100%; max-width:300px; background:#3f464c; padding:15px; 
+  border-radius:12px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+  <p id="resPlate">Plate: -</p>
+  <p id="resOwner">Owner: -</p>
+  <p id="resCar">Car: -</p>
+  <p id="resCity">City: -</p>
+</div>
+</div>
+
+
+
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+  authDomain: "smart-parking-73e2f.firebaseapp.com",
+  databaseURL: "https://smart-parking-73e2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smart-parking-73e2f",
+  storageBucket: "smart-parking-73e2f.firebasestorage.app",
+  messagingSenderId: "677685611894",
+  appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+};
+firebase.initializeApp(firebaseConfig);
+
+function searchVehicle(){
+let plate = document.getElementById("plate").value;
+
+firebase.database().ref("vehicleData/" + plate).once("value")
+.then(function(snapshot){
+
+if(snapshot.exists()){
+let data = snapshot.val();
+
+document.getElementById("result").innerHTML =
+"Owner: " + data.owner + "<br>" +
+"Car: " + data.car + "<br>" +
+"City: " + data.city;
+
+}
+else{
+document.getElementById("result").innerHTML =
+"Vehicle not found";
+}
+});
+
+}
+// Toggle input visibility
+function toggleInput(){
+  const area = document.getElementById("plateSearchArea");
+  area.style.display = (area.style.display === "none") ? "block" : "none";
+}
+
+// Handle Enter key
+function handleEnter(event){
+if(event.key === "Enter"){
+  event.preventDefault();
+  searchPlate();
+}
+}
+
+// Search plate function (fetch from Firebase)
+function searchPlate(){
+const plate = document.getElementById("plateInput").value.toUpperCase().replace(/\s|[^A-Z0-9]/g,'');
+if(!plate){
+  alert("Please enter a plate number");
+  return;
+}
+
+firebase.database().ref("vehicleData/"+plate).once("value")
+  .then(snapshot=>{
+  const resultBox = document.getElementById("plateResultBox");
+  resultBox.style.display="block";
+
+if(snapshot.exists()){
+  const data = snapshot.val();
+  document.getElementById("resPlate").innerHTML = `<span class="label-text">Plate:</span> ${plate}`;
+  document.getElementById("resOwner").innerHTML = `<span class="label-text">Owner:</span> ${data.owner}`;
+  document.getElementById("resCar").innerHTML = `<span class="label-text">Car:</span> ${data.car}`;
+  document.getElementById("resCity").innerHTML = `<span class="label-text">City:</span> ${data.city}`;
+}else{
+  document.getElementById("resPlate").innerHTML = `<span class="label-text">Plate:</span> ${plate}`;
+  document.getElementById("resOwner").innerHTML = `<span class="label-text">Owner:</span> Not Found`;
+  document.getElementById("resCar").innerHTML = `<span class="label-text">Car:</span> -`;
+  document.getElementById("resCity").innerHTML = `<span class="label-text">City:</span> -`;
+  }
+});
+}
+</script>
+
+</div>
+
+</section>
+
+
+
+<!-- LABLE ABOUVE SLOTS GRID -->
+<section class="panel parking-area">
+ <div class="legend">
+  <span class="chip free">Free</span>
+  <span class="chip occupied">Occupied</span>
+  <span class="chip reserved">Reserved</span>
+ </div>
+
+ <div id="parkingGrid" class="grid"></div>
+</section>
+
+<section class="panel actions">
+<h2 style="text-align: center;color: #00bfff;">Reserve Slot</h2>
+  <form id="reserveForm">
+
+<label>
+  Slot number:
+  <input type="number" id="slotNumber" min="1" required />
+</label>
+
+<label>
+  Your name:
+  <input type="text" id="reserverName" required />
+</label>
+
+<label>
+  Hold for (minutes):
+  <input type="number" id="holdMin" min="1" max="1440" value="15" required />
+</label>
+
+<div class="form-actions">
+  <button type="submit">Reserve Slot</button>
+  <button type="button" id="cancelReservationBtn" onclick="cancelReservation()">Cancel Reservation</button>
+</div>
+
+<div style="text-align: center;">
+<a href="Insta book.html" class="link-button insta-btn">Insta Book</a>
+</div>
+  </form>
+
+  <div id="notifications" class="notifications"></div>
+</section>
+</main>
+
+
+
+<!-- NAVIGATE YOUR SLOT  -->
+<div class="container">
+
+<a href="Location Map.html" id="showNavBtn">Navigate Your Slot</a>
+
+<div id="navWrapper" style="display:none;">
+  <div class="nav-grid" id="navGrid">
+    <canvas id="navCanvas" width="600" height="620"></canvas>
+
+    <div class="nav-entry">ENTRY</div>
+    <div class="nav-exit" onclick="goToExit()">EXIT</div>
+
+    <div class="nav-slots" id="navSlots"></div>
+  </div>
+</div>
+
+</div>
+
+
+
+<script>
+const navWrapper = document.getElementById("navWrapper");
+const showNavBtn = document.getElementById("showNavBtn");
+
+const navSlotsContainer = document.getElementById("navSlots");
+const canvas = document.getElementById("navCanvas");
+const ctx = canvas.getContext("2d");
+const grid = document.getElementById("navGrid");
+
+let slots=[];
+let currentSlot=null;
+
+const entry={x:40,y:40};
+const exit={x:560,y:40};
+
+/* SHOW GRID */
+showNavBtn.onclick = () => {
+  if(navWrapper.style.display === "none"){
+    navWrapper.style.display = "none";    /* show gird* if to show replace none with block*/
+  } else {
+    navWrapper.style.display = "none";
+  }
+};
+/* CREATE SLOTS */
+for(let i=1;i<=24;i++){
+  let d=document.createElement("div");
+  d.className="nav-slot";
+  d.innerText=i;
+  d.onclick=()=>goToSlot(d);
+  navSlotsContainer.appendChild(d);
+  slots.push(d);
+}
+
+/* GET LANES */
+function getLaneCenters(){
+  let rect = grid.getBoundingClientRect();
+  let colW = (rect.width-20)/6;
+  let lanes = [];
+  for(let i=1;i<6;i++){
+    lanes.push(10 + colW*i);
+  }
+  return lanes;
+}
+
+/* GO TO SLOT */
+function goToSlot(target){
+  slots.forEach(s=>s.classList.remove("active"));
+  target.classList.add("active");
+  currentSlot=target;
+
+  let path=createEntryPath(target);
+  animatePath(path);
+}
+
+/* EXIT */
+function goToExit(){
+  if(!currentSlot){
+    alert("Select slot first");
+    return;
+  }
+
+  let path=createExitPath(currentSlot);
+  animatePath(path);
+}
+
+/* ENTRY PATH */
+function createEntryPath(target){
+  let rect = grid.getBoundingClientRect();
+  let tRect = target.getBoundingClientRect();
+
+  let slotX = tRect.left - rect.left + tRect.width/2;
+  let slotY = tRect.top - rect.top + tRect.height/2;
+
+  let lanes = getLaneCenters();
+  let lane = lanes.reduce((a,b)=>Math.abs(b-slotX)<Math.abs(a-slotX)?b:a);
+
+  return [
+    entry,
+    {x:lane, y:entry.y},
+    {x:lane, y:slotY}
+  ];
+}
+
+/* EXIT PATH */
+function createExitPath(slot){
+  let rect = grid.getBoundingClientRect();
+  let sRect = slot.getBoundingClientRect();
+
+  let slotX = sRect.left - rect.left + sRect.width/2;
+  let slotY = sRect.top - rect.top + sRect.height/2;
+
+  let lanes = getLaneCenters();
+  let lane = lanes.reduce((a,b)=>Math.abs(b-slotX)<Math.abs(a-slotX)?b:a);
+
+  return [
+    {x:lane, y:slotY},
+    {x:lane, y:entry.y},
+    exit
+  ];
+}
+
+/* ANIMATION */
+function animatePath(path){
+let progress=0;
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.beginPath();
+  ctx.setLineDash([5,5]);
+  ctx.lineCap="round";
+
+  ctx.moveTo(path[0].x,path[0].y);
+
+for(let i=1;i<path.length;i++){
+  let p1=path[i-1];
+  let p2=path[i];
+  let t=Math.min(1,progress*(path.length-1)-(i-1));
+
+if(t>0){
+  ctx.lineTo(
+    p1.x+(p2.x-p1.x)*t,
+    p1.y+(p2.y-p1.y)*t
+  );
+}
+}
+
+  ctx.strokeStyle="#ceff00";
+  ctx.lineWidth=2.5;
+  ctx.stroke();
+
+if(progress<1){
+  progress+=0.025;
+  requestAnimationFrame(animate);
+  }
+}
+
+animate();
+}
+</script>
+
+
+
+<!-- Floating Navigation Window -->
+
+     <div id="miniNav">
+        🅿 Navigation Running
+    </div>
+
+<div id="floatingNav">
+
+    <!-- Draggable Header -->
+    <div id="dragBar">
+        <div class="nav-title">
+            🅿 <span id="parkingTitle">Parking Navigation</span>
+        </div>
+
+        <button id="minimizeBtn">−</button>
+
+    </div>
+    
+    <!-- Mini Live Map -->
+    <div id="mapContainer">
+        <iframe
+            src="location map.html?floating=true"
+            id="mapFrame"
+            title="Live Navigation Map">
+        </iframe>
+    </div>
+
+    <!-- Navigation Details -->
+    <div id="navBody">
+        <p id="distanceText">
+            📍 Navigating to destination...
+        </p>
+
+        <div class="nav-buttons">
+            <button id="openNavBtn">
+                Open Full Map
+            </button>
+
+            <button id="closeNavBtn">
+                End Navigation
+            </button>
+        </div>
+    </div>
+  </div>
+  
+
+<!-- FOTTER -->
+<footer class="footer" style="text-align: center;">
+  <small>Smart Parking System - The new method of parking</small>
+</footer>
+
+
+
+
+
+
+
+
+
+
+<script>
+/* ---- JavaScript (Smart Parking System) ---- */
+
+const STORAGE_KEY = 'smart_parking_singlefile';
+const DEFAULT_SLOTS = 24;
+const SIM_INTERVAL_MS = 2000;
+
+function safeParseJSON(str, fallback){
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+function nowISO(){ return new Date().toISOString(); }
+
+let state = {
+  slots: [],
+  simulationRunning: false
+};
+
+const refs = {
+  parkingGrid: document.getElementById('parkingGrid'),
+  totalSlots: document.getElementById('totalSlots'),
+  availableCount: document.getElementById('availableCount'),
+  occupiedCount: document.getElementById('occupiedCount'),
+  reservedCount: document.getElementById('reservedCount'),
+  simulateToggle: document.getElementById('simulateToggle'),
+  resetBtn: document.getElementById('resetBtn'),
+  reserveForm: document.getElementById('reserveForm'),
+  slotNumberInput: document.getElementById('slotNumber'),
+  reserverNameInput: document.getElementById('reserverName'),
+  holdMinInput: document.getElementById('holdMin'),
+  cancelReservationBtn: document.getElementById('cancelReservationBtn'),
+  notifications: document.getElementById('notifications')
+};
+
+function initializeDefault(){
+state.slots = [];
+  for(let i=1;i<=DEFAULT_SLOTS;i++){
+    state.slots.push({
+    id: i,
+    status: 'free',
+    reserver: null
+    });
+    }
+    saveState();
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return initializeDefault();
+    const parsed = safeParseJSON(raw, null);
+  if(!parsed) return initializeDefault();
+    state = parsed;
+}
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function render(){
+  const total = state.slots.length;
+  const occupied = state.slots.filter(s=>s.status==='occupied').length;
+  const reserved = state.slots.filter(s=>s.status==='reserved').length;
+  const available = total - occupied - reserved;
+
+  refs.totalSlots.textContent = total;
+  refs.occupiedCount.textContent = occupied;
+  refs.reservedCount.textContent = reserved;
+  refs.availableCount.textContent = available;
+
+  refs.simulateToggle.textContent = state.simulationRunning ? "Stop Simulation" : "Start Simulation";
+
+  refs.parkingGrid.innerHTML = "";
+  state.slots.forEach(slot=>{
+   const el = document.createElement('div');
+   el.className = "slot " + slot.status;
+   el.innerHTML = `
+   <div class="label">Slot ${slot.id}</div>
+   <div class="meta">
+    ${
+    slot.status==='free'
+    ? "Available"
+    : slot.status==='occupied'
+    ? "Occupied"
+    : "Reserved by "+slot.reserver.name
+    }
+    </div>
+    ${
+    slot.status==='reserved'
+    ? '<span class="badge">RESERVED</span>'
+    : slot.status==='occupied'
+    ? '<span class="badge">OCC</span>'
+    : ''
+    }
+    `;
+
+    el.onclick = ()=>handleSlotClick(slot.id);
+    refs.parkingGrid.appendChild(el);
+  });
+}
+
+function notify(msg,type="info"){
+  const el = document.createElement('div');
+  el.className = "notify "+type;
+  el.textContent = msg;
+  refs.notifications.prepend(el);
+  setTimeout(()=>el.remove(),4000);
+}
+
+function findSlot(id){
+  return state.slots.find(s=>s.id===id);
+}
+
+function handleSlotClick(id){
+const slot = findSlot(id);
+  if(slot.status === "reserved"){
+    notify(`Slot ${slot.id} is reserved.`, "warn");
+    return;
+  }
+  slot.status = slot.status==="free" ? "occupied" : "free";
+  saveState();
+  render();
+}
+
+function reserveSlot(slotId,name,minutes){
+  const slot = findSlot(slotId);
+  if(slot.status !== "free") throw new Error("Slot not available");
+  slot.status = "reserved";
+  slot.reserver = {name, until: Date.now() + minutes*60000};
+  saveState();
+  render();
+}
+
+function cancelReservation(slotId){
+  const slot = findSlot(slotId);
+  if(slot.status !== "reserved") throw new Error("Slot not reserved");
+  slot.status = "free";
+  slot.reserver = null;
+  saveState();
+  render();
+}
+
+function expireReservations(){
+  const now = Date.now();
+  let changed = false;
+
+state.slots.forEach(s=>{
+  if(s.status==="reserved" && s.reserver && now > s.reserver.until){
+  s.status = "free";
+  s.reserver = null;
+  changed = true;
+}
+});
+
+  if(changed){
+    saveState();
+    render();
+  }
+}
+
+let simTimer=null;
+
+function startSim(){
+  state.simulationRunning = true;
+  saveState();
+  simTick();
+  simTimer = setInterval(simTick, SIM_INTERVAL_MS);
+  render();
+}
+
+function stopSim(){
+  state.simulationRunning = false;
+  clearInterval(simTimer);
+  simTimer=null;
+  saveState();
+  render();
+}
+
+function simTick(){
+  expireReservations();
+  state.slots.forEach(slot=>{
+    if(slot.status==="reserved") return;
+    if(Math.random()<0.1) slot.status = "occupied";
+    else if(Math.random()<0.12) slot.status = "free";
+  });
+  saveState();
+  render();
+}
+
+refs.simulateToggle.onclick = ()=>{
+  if(state.simulationRunning) stopSim();
+  else startSim();
+};
+
+refs.resetBtn.onclick = ()=>{
+  if(confirm("Reset system?")){
+    initializeDefault();
+    render();
+    notify("System reset","success");
+  }
+};
+
+refs.reserveForm.onsubmit = (e)=>{
+  e.preventDefault();
+  const id = Number(refs.slotNumberInput.value);
+  const name = refs.reserverNameInput.value.trim();
+  const mins = Number(refs.holdMinInput.value);
+
+  try{
+    reserveSlot(id,name,mins);
+    notify("Slot reserved","success");
+    refs.reserveForm.reset();
+  }catch(err){
+    notify(err.message,"error");
+  }
+};
+
+refs.cancelReservationBtn.onclick = ()=>{
+  const id = Number(refs.slotNumberInput.value);
+   if(!id){
+    alert("Please enter slot number first!");
+    return;}
+  const confirmCancel = confirm("⚠ Are you sure you want to cancel this reservation?");
+  if(!confirmCancel){
+    return; // User clicked Cancel
+  }
+  try{
+    cancelReservation(id);
+    notify("Reservation cancelled","success");
+  }catch(err){
+    notify(err.message,"error");
+  }
+};
+
+
+setInterval(expireReservations,60000);
+
+function boot(){
+  loadState();
+  render();
+  if(state.simulationRunning) startSim();
+}
+boot();
+
+
+
+
+
+// ------ Show floating window on every page ------- 
+const nav =
+JSON.parse(
+  localStorage.getItem(
+    "activeNavigation"
+  )
+);
+
+if (nav) {
+  const box =
+    document.getElementById(
+      "floatingNav"
+    );
+
+  box.style.display = "block";
+
+  document.getElementById(
+    "parkingTitle"
+  ).innerText = nav.name;
+}
+
+
+
+
+// ------ Open main page again ------- 
+document
+.getElementById("openNavBtn")
+.addEventListener(
+  "click",
+  function () {
+
+    window.location.href =
+      "Location Map.html";
+  }
+);
+
+
+
+
+// ------ End Navigation ------- 
+document
+.getElementById("closeNavBtn")
+.addEventListener(
+  "click",
+  function () {
+
+    localStorage.removeItem(
+      "activeNavigation"
+    );
+
+    document.getElementById(
+      "floatingNav"
+    ).style.display =
+      "none";
+  }
+);
+
+
+
+
+
+// ------ Made it Dragable ------- 
+const box =
+document.getElementById(
+  "floatingNav"
+);
+
+const dragBar =
+document.getElementById(
+  "dragBar"
+);
+
+let dragging = false;
+
+let offsetX;
+let offsetY;
+
+dragBar.addEventListener(
+  "mousedown",
+  function (e) {
+
+    dragging = true;
+
+    offsetX =
+      e.clientX -
+      box.offsetLeft;
+
+    offsetY =
+      e.clientY -
+      box.offsetTop;
+  }
+);
+
+document.addEventListener(
+  "mousemove",
+  function (e) {
+
+    if (!dragging)
+      return;
+
+    box.style.left =
+      e.clientX -
+      offsetX +
+      "px";
+
+    box.style.top =
+      e.clientY -
+      offsetY +
+      "px";
+
+    box.style.bottom =
+      "auto";
+
+    box.style.right =
+      "auto";
+  }
+);
+
+document.addEventListener(
+  "mouseup",
+  function () {
+    dragging = false;
+  }
+);
+
+
+
+const minimizeBtn = document.getElementById("minimizeBtn");
+const miniNav = document.getElementById("miniNav");
+
+minimizeBtn.addEventListener("click", function () {
+
+    document.getElementById("floatingNav").style.display = "none";
+    miniNav.style.display = "block";
+});
+
+miniNav.addEventListener("click", function () {
+
+    document.getElementById("floatingNav").style.display = "block";
+    miniNav.style.display = "none";
+});
+
+
+
+</script>
+
+</body>
+</html>

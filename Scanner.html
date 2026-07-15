@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Parking Scanner</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #05070f, #0a0f1a, #05070f);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:40px 10px;
+    min-height:100vh;
+}
+
+.container{
+    width:90%;
+    max-width:900px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border:1px solid rgba(206,255,0,0.25);
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 0 30px rgba(206,255,0,0.15);
+    text-align:center;
+}
+
+h1{
+    font-size:28px;
+    margin-bottom:20px;
+    color:#ceff00;
+    letter-spacing:1px;
+}
+
+/* VIDEO WRAPPER (needed for the alignment guide overlay) */
+.video-wrap{
+    position:relative;
+    width:100%;
+    line-height:0;
+}
+
+video{
+    width:100%;
+    border-radius:15px;
+    border:2px solid rgba(206,255,0,0.6);
+    box-shadow:0 0 20px rgba(206,255,0,0.2);
+    background:#000;
+    min-height:200px;
+}
+
+/* GUIDE BOX - shows exactly the region that gets OCR'd (matches cropW/cropH in JS) */
+.guide-box{
+    position:absolute;
+    top:35%;
+    left:10%;
+    width:80%;
+    height:30%;
+    border:2px dashed #ceff00;
+    border-radius:8px;
+    box-shadow:0 0 0 2000px rgba(0,0,0,0.35);
+    pointer-events:none;
+    display:none;
+}
+.guide-box.active{ display:block; }
+.guide-box::after{
+    content:"Align plate inside this box";
+    position:absolute;
+    bottom:-26px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:12px;
+    color:#ceff00;
+    white-space:nowrap;
+}
+
+button{
+    padding:12px 22px;
+    margin:10px;
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(135deg, #ceff00, #a6d600);
+    color:black;
+    font-weight:bold;
+    border-radius:10px;
+    transition:0.3s ease;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
+
+button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+button:hover:not(:disabled){
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(206,255,0,0.3);
+}
+
+button:active:not(:disabled){
+    transform:scale(0.96);
+}
+
+.box{
+    margin-top:20px;
+    padding:18px;
+    background: rgba(255,255,255,0.04);
+    border:1px solid rgba(206,255,0,0.2);
+    border-radius:15px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+}
+
+.box h3{
+    margin-bottom:10px;
+    color:#ceff00;
+}
+
+#vehicleDetails p{
+    margin:6px 0;
+    text-align:center;
+}
+
+#vehicleDetails .detail-label{
+    color:#8f9aa8;
+    text-transform:capitalize;
+}
+
+#vehicleDetails .detail-value{
+    color:white;
+    font-weight:600;
+    margin-left:6px;
+}
+
+#plateText{
+    font-size:22px;
+    font-weight:bold;
+    color:#ceff00;
+    letter-spacing:2px;
+    min-height:28px;
+    width:90%;
+    max-width:320px;
+    text-align:center;
+    background: rgba(255,255,255,0.06);
+    border:1px solid rgba(206,255,0,0.4);
+    border-radius:8px;
+    padding:8px;
+    text-transform:uppercase;
+}
+
+#plateText::placeholder{
+    color:rgba(206,255,0,0.4);
+}
+
+#searchBtn{
+    padding:8px 18px;
+    font-size:14px;
+    margin:8px 0 0 0;
+}
+
+#plateHint{
+    font-size:12px;
+    color:#8f9aa8;
+    margin-top:6px;
+}
+
+.warning-box{
+    margin-top:14px;
+    padding:14px;
+    background: rgba(255, 87, 34, 0.12);
+    border:1px solid rgba(255, 87, 34, 0.5);
+    border-radius:12px;
+    color:#ffb199;
+    font-size:14px;
+    text-align:left;
+    display:none;
+}
+
+.warning-box.active{ display:block; }
+
+.warning-box strong{
+    display:block;
+    margin-bottom:4px;
+    color:#ff8a65;
+    font-size:15px;
+}
+
+#loading{
+    font-size:14px;
+    color:#a6d600;
+    min-height:18px;
+    margin-bottom:6px;
+}
+
+#status{
+    font-size:13px;
+    color:#8f9aa8;
+    margin-top:6px;
+    min-height:16px;
+}
+
+.container:hover{
+    box-shadow:0 0 40px rgba(206,255,0,0.25);
+    transition:0.4s;
+}
+
+@media(max-width:600px){
+    h1{ font-size:22px; }
+    button{ width:100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Smart Parking Scanner</h1>
+
+<div class="video-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="guide-box" id="guideBox"></div>
+</div>
+
+<div id="status">Camera not started</div>
+
+<br>
+
+<button id="startBtn" onclick="startCamera()">Start Camera</button>
+<button id="scanBtn" onclick="scanPlate()" disabled>Scan Plate</button>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<div class="box">
+<h3>Plate:</h3>
+<div id="loading"></div>
+<input id="plateText" type="text" value="" placeholder="-" autocomplete="off" autocapitalize="characters">
+<div>
+<button id="searchBtn" onclick="searchTypedPlate()">Search</button>
+</div>
+<div id="plateHint"></div>
+<div class="warning-box" id="damageWarning">
+<strong>⚠ Plate not readable</strong>
+This plate could not be scanned after several attempts. It may be broken, rusted, faded, dirty, or bent. Please check it visually, or type the plate number in manually above and tap Search.
+</div>
+</div>
+
+<div class="box">
+<h3>Vehicle Details</h3>
+<div id="vehicleDetails">
+<p>No vehicle scanned yet.</p>
+</div>
+</div>
+
+</div>
+
+<script>
+// ================= FIREBASE =================
+const firebaseConfig = {
+    apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+    authDomain: "smart-parking-73e2f.firebaseapp.com",
+    databaseURL: "https://smart-parking-73e2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "smart-parking-73e2f",
+    storageBucket: "smart-parking-73e2f.firebasestorage.app",
+    messagingSenderId: "677685611894",
+    appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ================= STATE =================
+let stream = null;
+let cameraReady = false;
+let scanning = false;
+let failStreak = 0; // consecutive scans that came back unreadable / low-confidence
+let damageAlertShown = false; // ensures the damage popup only fires once per bad streak
+const FAIL_STREAK_LIMIT = 3;       // after this many bad scans in a row, suspect physical damage
+const CONFIDENCE_THRESHOLD = 45;   // Tesseract mean confidence (0-100) below which a read is "low quality"
+
+const video    = document.getElementById("video");
+const guideBox = document.getElementById("guideBox");
+const status   = document.getElementById("status");
+const loading  = document.getElementById("loading");
+const plateText= document.getElementById("plateText");
+const startBtn = document.getElementById("startBtn");
+const scanBtn  = document.getElementById("scanBtn");
+const damageWarning = document.getElementById("damageWarning");
+
+// Crop fractions - MUST match the .guide-box CSS (top:35% left:10% w:80% h:30%)
+const CROP = { xFrac: 0.10, yFrac: 0.35, wFrac: 0.80, hFrac: 0.30 };
+
+// ================= CAMERA =================
+async function startCamera(){
+    status.innerText = "Requesting camera access...";
+
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        status.innerText = "Camera not supported in this browser.";
+        alert("Your browser does not support camera access, or this page is not being served over HTTPS (camera access requires HTTPS, or localhost).");
+        return;
+    }
+
+    try{
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: { ideal: "environment" }
+            },
+            audio: false
+        });
+
+        video.srcObject = stream;
+
+        await new Promise(resolve => {
+            video.onloadedmetadata = () => {
+                video.play();
+                resolve();
+            };
+        });
+
+        cameraReady = true;
+        failStreak = 0;
+        damageAlertShown = false;
+        damageWarning.classList.remove("active");
+        guideBox.classList.add("active");
+        startBtn.disabled = true;
+        scanBtn.disabled = false;
+        status.innerText = "Camera ready. Line up the plate in the box, then tap Scan Plate.";
+        console.log("Camera Started");
+
+    } catch(err){
+        console.error(err);
+        cameraReady = false;
+        if(err.name === "NotAllowedError"){
+            status.innerText = "Camera permission denied.";
+            alert("Camera access was denied. Please allow camera permission in your browser settings and try again.");
+        } else if(err.name === "NotFoundError"){
+            status.innerText = "No camera found.";
+            alert("No camera was found on this device.");
+        } else {
+            status.innerText = "Could not access camera.";
+            alert("Could not access the camera: " + err.message + "\n\nNote: camera access requires HTTPS (or localhost).");
+        }
+    }
+}
+
+// ================= PLATE AUTO-CORRECTION =================
+// OCR frequently confuses visually similar characters (0/O, 1/I, 5/S, 8/B, 2/Z, 6/G).
+// Indian plates follow a fixed shape: LL DD L(L) DDDD  (2 letters, 1-2 digits, 1-2 letters, 4 digits).
+// Knowing which position SHOULD be a letter vs a digit lets us fix misreads automatically.
+const DIGIT_TO_LETTER = { '0':'O', '1':'I', '5':'S', '8':'B', '2':'Z', '6':'G' };
+const LETTER_TO_DIGIT = { 'O':'0', 'D':'0', 'Q':'0', 'I':'1', 'L':'1', 'Z':'2', 'S':'5', 'B':'8', 'G':'6' };
+
+function fixChar(ch, wantDigit){
+    if(wantDigit){
+        return LETTER_TO_DIGIT[ch] || ch; // if it's a letter that looks like a digit, convert it
+    }
+    return DIGIT_TO_LETTER[ch] || ch;     // if it's a digit that looks like a letter, convert it
+}
+
+function applyTypeMask(text, mask){
+    // mask: array of 'L' (letter) / 'D' (digit), same length as text
+    return text.split('').map((ch, i) => fixChar(ch, mask[i] === 'D')).join('');
+}
+
+function correctPlate(raw){
+    // Common Indian plate shapes by total length after stripping non-alphanumerics
+    if(raw.length === 10){
+        // LL DD LL DDDD
+        return applyTypeMask(raw, ['L','L','D','D','L','L','D','D','D','D']);
+    }
+    if(raw.length === 9){
+        // LL DD L DDDD
+        return applyTypeMask(raw, ['L','L','D','D','L','D','D','D','D']);
+    }
+    // Unrecognized length/shape - return as-is, let the user verify/edit manually
+    return raw;
+}
+
+// If the DB lookup for our best-guess plate misses, we try flipping ambiguous
+// characters (0<->O, 1<->I, 5<->S, 8<->B, 2<->Z, 6<->G) at each position and
+// check those against the database too - covers the case where our auto-correct
+// (or the raw OCR) guessed a character wrong compared to what's actually stored.
+const SWAP_PAIRS = { '0':'O', 'O':'0', '1':'I', 'I':'1', '5':'S', 'S':'5', '8':'B', 'B':'8', '2':'Z', 'Z':'2', '6':'G', 'G':'6' };
+const MAX_AMBIGUOUS_POSITIONS = 2; // kept low - each extra position roughly doubles the chance of
+                                    // accidentally matching a DIFFERENT real plate in your database
+const MAX_VARIANTS = 8;
+
+function generatePlateVariants(text, extra = []){
+    const ambiguousPositions = [];
+    for(let i = 0; i < text.length; i++){
+        if(SWAP_PAIRS[text[i]]) ambiguousPositions.push(i);
+    }
+    const capped = ambiguousPositions.slice(0, MAX_AMBIGUOUS_POSITIONS);
+
+    const variants = new Set();
+    extra.forEach(e => { if(e && e !== text) variants.add(e); });
+
+    const totalCombos = Math.pow(2, capped.length);
+    for(let mask = 0; mask < totalCombos && variants.size < MAX_VARIANTS; mask++){
+        const arr = text.split('');
+        capped.forEach((pos, idx) => {
+            if((mask >> idx) & 1) arr[pos] = SWAP_PAIRS[arr[pos]];
+        });
+        const candidate = arr.join('');
+        if(candidate !== text) variants.add(candidate);
+    }
+
+    return Array.from(variants).slice(0, MAX_VARIANTS);
+}
+
+// ================= OCR + SCAN =================
+async function scanPlate(){
+
+    if(!cameraReady || !video.videoWidth){
+        alert("Camera is not ready yet. Please start the camera first.");
+        return;
+    }
+
+    if(scanning) return; // prevent double taps
+    scanning = true;
+    scanBtn.disabled = true;
+    plateText.value = "";
+    document.getElementById("plateHint").innerText = "";
+    damageWarning.classList.remove("active");
+    loading.innerText = "Capturing image...";
+
+    try{
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+
+        // STEP 1: crop to the same region shown by the on-screen guide box
+        const cropW = w * CROP.wFrac;
+        const cropH = h * CROP.hFrac;
+        const startX = w * CROP.xFrac;
+        const startY = h * CROP.yFrac;
+
+        // STEP 2: upscale the crop (small plate text needs more pixels for OCR)
+        const SCALE = 3;
+        canvas.width = cropW * SCALE;
+        canvas.height = cropH * SCALE;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(
+            video,
+            startX, startY, cropW, cropH,   // source crop
+            0, 0, cropW * SCALE, cropH * SCALE // scaled destination
+        );
+
+        // STEP 3: grayscale + contrast boost (soft, not a hard binary cut)
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for(let i = 0; i < data.length; i += 4){
+            const r = data[i], g = data[i+1], b = data[i+2];
+            let gray = 0.3*r + 0.59*g + 0.11*b;
+
+            // contrast stretch around mid-gray
+            gray = (gray - 128) * 1.5 + 128;
+            gray = Math.max(0, Math.min(255, gray));
+
+            data[i] = gray;
+            data[i+1] = gray;
+            data[i+2] = gray;
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        loading.innerText = "Reading number plate...";
+
+        const result = await Tesseract.recognize(canvas, 'eng', {
+            logger: m => {
+                if(m.status === "recognizing text"){
+                    loading.innerText = "Reading number plate... " + Math.round(m.progress * 100) + "%";
+                }
+            },
+            tessedit_pageseg_mode: 7, // treat the crop as a single line of text
+            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        });
+
+        let text = result.data.text;
+        const confidence = result.data.confidence; // 0-100, Tesseract's own quality estimate
+        console.log("RAW OCR:", text, "| confidence:", confidence);
+
+        // CLEAN PLATE
+        text = text.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+        // A full-length plate (9-10 chars, matching the standard format) is trusted more easily -
+        // Tesseract's confidence score runs low even on perfectly correct short single-line reads.
+        // BUT if confidence is very low, that's a real signal something is wrong (e.g. a rusted/
+        // damaged plate producing garbled-but-coincidentally-plate-length text) - length alone
+        // should never fully override a very low confidence score.
+        const looksCompleteLength = text.length >= 9;
+        const HARD_LOW_CONFIDENCE = 20;
+        const isLowQuality =
+            text.length < 5 ||
+            confidence < HARD_LOW_CONFIDENCE ||
+            (!looksCompleteLength && confidence < CONFIDENCE_THRESHOLD);
+
+        if(isLowQuality){
+            failStreak++;
+            plateText.value = text;
+            resetVehicleDetails();
+
+            if(failStreak >= FAIL_STREAK_LIMIT){
+                // Repeated unreadable scans - likely a physical issue with the plate, not just a bad angle
+                loading.innerText = "Scan failed.";
+                damageWarning.classList.add("active");
+
+                if(!damageAlertShown){
+                    damageAlertShown = true;
+                    alert("This number plate could not be read after several attempts. It may be broken, rusted, dirty, or faded. Please check it visually, or type the plate number in manually.");
+                }
+            } else {
+                loading.innerText = "Plate unclear - move closer, reduce glare, and hold steady, then try again.";
+            }
+            return;
+        }
+
+        // Good read - reset the fail streak
+        failStreak = 0;
+        damageAlertShown = false;
+        damageWarning.classList.remove("active");
+
+        // Auto-correct common OCR confusions (0/O, 1/I, 5/S, 8/B, 2/Z, 6/G)
+        // based on expected letter/digit position in the plate format.
+        const corrected = correctPlate(text);
+
+        plateText.value = corrected;
+        if(corrected !== text){
+            document.getElementById("plateHint").innerText =
+                "Auto-corrected likely misreads (e.g. 0/O) - double-check before relying on this, edit if needed.";
+        } else {
+            document.getElementById("plateHint").innerText =
+                "Not sure this looks right? Edit the plate above, then tap Search.";
+        }
+
+        loading.innerText = "Looking up vehicle...";
+        const fallbackCandidates = generatePlateVariants(corrected, [text]);
+        await searchFirebase(corrected, fallbackCandidates);
+
+    } catch(err){
+        console.error(err);
+        loading.innerText = "Scan failed.";
+        alert("OCR failed: " + err.message);
+    } finally {
+        scanning = false;
+        scanBtn.disabled = false;
+    }
+}
+
+// Lets the user fix an OCR misread (e.g. 0 vs O) by hand, then re-search.
+async function searchTypedPlate(){
+    let text = plateText.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    plateText.value = text;
+
+    if(text.length < 5){
+        alert("Please enter a valid plate number (at least 5 characters).");
+        return;
+    }
+
+    document.getElementById("plateHint").innerText = "";
+    damageWarning.classList.remove("active");
+    damageAlertShown = false;
+    loading.innerText = "Looking up vehicle...";
+    await searchFirebase(text, generatePlateVariants(text));
+}
+
+function resetVehicleDetails(){
+    document.getElementById("vehicleDetails").innerHTML = "<p>No vehicle scanned yet.</p>";
+}
+
+// Turns a Firebase field key like "carModel" or "Car_Model" into "Car Model"
+function formatFieldLabel(key){
+    return key
+        .replace(/_/g, " ")
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// Renders vehicle fields in a fixed order (Owner, Car, City, Colour), matching
+// whatever key names/casing your database actually uses. Any extra fields not
+// in that list are appended afterward so nothing gets silently hidden.
+const PRIORITY_FIELD_ORDER = [
+    { label: "Owner",  aliases: ["owner", "ownername", "owner_name"] },
+    { label: "Car",    aliases: ["car", "carmodel", "car_model", "vehicle", "vehiclemodel"] },
+    { label: "City",   aliases: ["city"] },
+    { label: "Colour", aliases: ["colour", "color"] }
+];
+
+function renderVehicleDetails(data){
+    const container = document.getElementById("vehicleDetails");
+
+    const lowerKeyMap = {};
+    Object.keys(data).forEach(k => { lowerKeyMap[k.toLowerCase()] = k; });
+
+    const usedKeys = new Set();
+    const rows = [];
+
+    // 1) Pull out the priority fields first, in the requested order
+    PRIORITY_FIELD_ORDER.forEach(({ label, aliases }) => {
+        for(const alias of aliases){
+            if(lowerKeyMap[alias] !== undefined){
+                const actualKey = lowerKeyMap[alias];
+                usedKeys.add(actualKey);
+                rows.push([label, data[actualKey]]);
+                break;
+            }
+        }
+    });
+
+    // 2) Append anything else the record has that wasn't already shown
+    Object.entries(data).forEach(([key, value]) => {
+        if(!usedKeys.has(key)){
+            rows.push([formatFieldLabel(key), value]);
+        }
+    });
+
+    if(!rows.length){
+        container.innerHTML = "<p>Vehicle found, but this record has no details stored.</p>";
+        return;
+    }
+
+    container.innerHTML = rows.map(([label, value]) => {
+        const displayValue = (value === null || value === undefined || value === "")
+            ? "-"
+            : (typeof value === "object" ? JSON.stringify(value) : String(value));
+        return `<p><span class="detail-label">${label}:</span><span class="detail-value">${displayValue}</span></p>`;
+    }).join("");
+}
+
+// ================= FIREBASE SEARCH =================
+async function lookupPlate(plate){
+    const snapshot = await db.ref("vehicleData/" + plate).once("value");
+    return snapshot.exists() ? snapshot.val() : null;
+}
+
+async function searchFirebase(plate, fallbackCandidates = []){
+    try{
+        let data = await lookupPlate(plate);
+        let matchedPlate = plate;
+
+        if(!data && fallbackCandidates.length){
+            loading.innerText = "Not found - trying alternate readings...";
+
+            // Check every candidate (not just the first hit) so we can tell
+            // whether more than one REAL plate matches - if so, it's not safe
+            // to silently guess, since that could show the wrong vehicle.
+            const matches = [];
+            for(const candidate of fallbackCandidates){
+                const candidateData = await lookupPlate(candidate);
+                if(candidateData){
+                    matches.push({ plate: candidate, data: candidateData });
+                }
+            }
+
+            if(matches.length === 1){
+                data = matches[0].data;
+                matchedPlate = matches[0].plate;
+            } else if(matches.length > 1){
+                // Ambiguous - multiple different real plates matched the alternate readings.
+                // Don't guess which one is correct; ask the user to confirm manually.
+                resetVehicleDetails();
+                const options = matches.map(m => m.plate).join(", ");
+                document.getElementById("plateHint").innerText =
+                    "Multiple possible plates matched (" + options + "). Please edit the plate above to the correct one and tap Search.";
+                loading.innerText = "Ambiguous scan - couldn't tell which plate is correct.";
+                return;
+            }
+        }
+
+        if(data){
+            if(matchedPlate !== plate){
+                plateText.value = matchedPlate;
+                document.getElementById("plateHint").innerText =
+                    "Found using an alternate reading (" + matchedPlate + ") - the scan likely misread a character.";
+            }
+            renderVehicleDetails(data);
+            loading.innerText = "Vehicle found.";
+        } else {
+            resetVehicleDetails();
+            loading.innerText = "Vehicle not found in database. Double-check the plate above and tap Search, or verify it's registered.";
+        }
+    } catch(err){
+        console.error(err);
+        loading.innerText = "Database lookup failed.";
+        alert("Could not reach the database: " + err.message);
+    }
+}
+</script>
+
+</body>
+</html>

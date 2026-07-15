@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Parking Locator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  font-family: Arial;
+}
+
+#map {
+  height: 100vh;
+  width: 100%;
+}
+
+#infoBox {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+
+  width: 320px;
+
+  background: rgb(22, 26, 15);
+  padding: 20px;
+  border-radius: 20px;
+
+  box-shadow: 0 0 30px #78ca1b;
+
+  z-index: 100;
+}
+
+#infoBox h2 {
+  color: #7ece22;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+#infoBox p {
+  margin-top: 10px;
+  color: #65a51b;
+}
+
+#navigateBtn {
+  width: 100%;
+  margin-top: 20px;
+
+  padding: 15px;
+
+  border: none;
+  background: #363d37;
+  color: rgb(43, 38, 38);
+
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all ease 0.3s;
+  background: #7ece22;
+  font-weight: 4000;
+}
+
+#navigateBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 10px #5baf16;
+}
+
+#startBtn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #64a719;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: none;
+  transition: all ease 0.3s;
+}
+
+#startBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 10px #5baf16;
+}
+
+#stopBtn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #c62828;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: none;
+  transition: all ease 0.3s;
+}
+
+#stopBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 10px #c62828;
+}
+
+.travel-card{
+  position:fixed;
+  bottom:-150px;
+  left:50%;
+  transform:translateX(-50%);
+  width:360px;
+  background:#241d1d;
+  border-radius:22px;
+  padding:18px;
+  box-shadow:0 0px 20px #78ca1b;
+  transition:.35s;
+  z-index:1000;
+
+}
+
+.travel-card.show{
+  bottom:20px;
+
+}
+
+.travel-icon{
+  position:relative;
+  font-size:30px;
+  color:#868383;
+  cursor:pointer;
+  transition:.3s;
+  user-select:none;
+}
+
+.travel-icons{
+  position:relative;
+  display:flex;
+  justify-content:space-evenly;
+  align-items:center;
+  margin-bottom:15px;
+  padding-bottom:12px;
+}
+
+/* Selected icon */
+.travel-icon.active{
+  color:#5baf16;
+}
+
+/* green line below selected icon */
+.slider{
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  background: #78ca1b;
+  border-radius: 20px;
+  transition: all .3s ease;
+}
+
+.travel-info{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+  font-size:18px;
+  font-weight:600;
+  color: #5baf16;
+}
+
+.dot{
+  color:#888;
+}
+</style>
+
+
+
+</head>
+<body>
+
+
+<div id="map"></div>
+
+<div id="infoBox">
+
+  <h2 id="parkingName">Select a Parking</h2>
+  <p id="parkingAddress"></p>
+  <p id="parkingSlots"></p>
+
+  <button id=navigateBtn onclick="navigateToParking()">
+    Navigate Parking
+  </button>
+
+  <button id="startBtn">Start Journey</button>
+ <button id="stopBtn" style="display:none;"> Stop Journey</button>
+</div>
+
+
+<div id="travelCard" class="travel-card">
+
+<div class="travel-icons">
+
+    <span class="slider"></span>
+
+    <span class="material-symbols-rounded travel-icon active"
+        data-mode="DRIVING">
+      directions_car
+    </span>
+
+    <span class="material-symbols-rounded travel-icon"
+        data-mode="DRIVING">
+      two_wheeler
+    </span>
+
+    <span class="material-symbols-rounded travel-icon"
+        data-mode="TRANSIT">
+      directions_bus
+    </span>
+
+    <span class="material-symbols-rounded travel-icon"
+        data-mode="WALKING">
+      directions_walk
+    </span>
+</div>
+
+    <div class="travel-info">
+
+        <span id="distance">
+            📍 -- km
+        </span>
+
+        <span class="dot">•</span>
+
+        <span id="duration">
+            ⏱️ -- min
+        </span>
+
+    </div>
+
+</div>
+
+
+
+
+
+<!-- Google Maps API -->
+<script
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5tjjM9fwokluI6uq6Fne0cu49uYGa5CA&libraries=geometry&callback=initMap"
+async
+defer>
+</script>
+
+</body>
+</html>
+
+
+
+
+<script>
+let map;
+let userLocation;
+let selectedParking = null;
+let directionsService;
+let directionsRenderer;
+
+let userMarker;
+let previousPos = null;
+
+let navigationStarted = false;
+
+
+const parkingLots = [
+
+{
+  id: 1,
+  name: "Shaniraj Pay & Park",
+  address: "Sarvodaynagar, Manjarli, Badlapur, Maharashtra 421503",
+  slots: 35,
+  lat: 19.166,
+  lng: 73.236
+},
+
+{
+  id: 2,
+  name: "Aai Gaondevi Pay Parking",
+  address: "Near Railway Station, Bazarpeth, Badlapur, Maharashtra 421503",
+  slots: 42,
+  lat: 19.155,
+  lng: 73.265
+},
+
+{
+  id: 3,
+  name: "The Chill Lounge Parking",
+  address: "Katrap, Badlapur, Maharashtra 421503",
+  slots: 28,
+  lat: 19.167,
+  lng: 73.237
+},
+
+{
+  id: 4,
+  name: "Nilaje Station Parking",
+  address: "Nilje Gaon, Maharashtra 421204",
+  slots: 55,
+  lat: 19.190,
+  lng: 73.080
+},
+
+{
+  id: 5,
+  name: "BMC Pay & Park",
+  address: "Dadar West, Mumbai, Maharashtra 400028",
+  slots: 95,
+  lat: 19.0178,
+  lng: 72.8478
+},
+
+{
+  id: 6,
+  name: "BMC Pay & Park",
+  address: "Bandra West, Mumbai, Maharashtra 400050",
+  slots: 80,
+  lat: 19.0544,
+  lng: 72.8406
+},
+
+{
+  id: 7,
+  name: "Public Parking Lot",
+  address: "Andheri East, Mumbai, Maharashtra 400069",
+  slots: 120,
+  lat: 19.1136,
+  lng: 72.8697
+},
+
+{
+  id: 8,
+  name: "Metro Parking Plaza",
+  address: "Ghatkopar East, Mumbai, Maharashtra 400077",
+  slots: 65,
+  lat: 19.0862,
+  lng: 72.9081
+},
+
+{
+  id: 9,
+  name: "Phoenix Marketcity Parking",
+  address: "Kurla West, Mumbai, Maharashtra 400070",
+  slots: 200,
+  lat: 19.0866,
+  lng: 72.8890
+},
+
+{
+  id: 10,
+  name: "Infinity Mall Parking",
+  address: "Malad West, Mumbai, Maharashtra 400064",
+  slots: 180,
+  lat: 19.1840,
+  lng: 72.8347
+},
+
+{
+  id: 11,
+  name: "R City Mall Parking",
+  address: "Ghatkopar West, Mumbai, Maharashtra 400086",
+  slots: 220,
+  lat: 19.0990,
+  lng: 72.9160
+},
+
+{
+  id: 12,
+  name: "BMC Multi-Level Parking",
+  address: "Borivali West, Mumbai, Maharashtra 400092",
+  slots: 140,
+  lat: 19.2307,
+  lng: 72.8567
+},
+
+{
+  id: 13,
+  name: "Oberoi Mall Parking",
+  address: "Goregaon East, Mumbai, Maharashtra 400063",
+  slots: 190,
+  lat: 19.1737,
+  lng: 72.8604
+},
+
+{
+  id: 14,
+  name: "Inorbit Mall Parking",
+  address: "Malad West, Mumbai, Maharashtra 400064",
+  slots: 210,
+  lat: 19.1725,
+  lng: 72.8359
+},
+
+{
+  id: 15,
+  name: "NESCO Parking",
+  address: "Goregaon East, Mumbai, Maharashtra 400063",
+  slots: 300,
+  lat: 19.1552,
+  lng: 72.8557
+},
+
+{
+  id: 16,
+  name: "Crawford Market Parking",
+  address: "Fort, Mumbai, Maharashtra 400001",
+  slots: 75,
+  lat: 18.9474,
+  lng: 72.8348
+},
+
+{
+  id: 17,
+  name: "BMC Pay & Park",
+  address: "Chembur East, Mumbai, Maharashtra 400071",
+  slots: 85,
+  lat: 19.0522,
+  lng: 72.9005
+},
+
+{
+  id: 18,
+  name: "Powai Plaza Parking",
+  address: "Powai, Mumbai, Maharashtra 400076",
+  slots: 110,
+  lat: 19.1197,
+  lng: 72.9053
+},
+
+{
+  id: 19,
+  name: "Viviana Mall Parking",
+  address: "Thane West, Maharashtra 400606",
+  slots: 250,
+  lat: 19.2094,
+  lng: 72.9725
+},
+
+{
+  id: 20,
+  name: "Seawoods Grand Central Parking",
+  address: "Seawoods, Navi Mumbai, Maharashtra 400706",
+  slots: 280,
+  lat: 19.0221,
+  lng: 73.0179
+},
+
+{
+  id: 21,
+  name: "Inorbit Mall Parking",
+  address: "Vashi, Navi Mumbai, Maharashtra 400703",
+  slots: 170,
+  lat: 19.0736,
+  lng: 72.9988
+},
+
+{
+  id: 22,
+  name: "Patil Pay & Park",
+  address: "Shivaji Chowk, Kalyan West, Maharashtra 421301",
+  slots: 65,
+  lat: 19.2432,
+  lng: 73.1305
+},
+
+{
+  id: 23,
+  name: "Kalyan Railway Station Parking",
+  address: "Near Kalyan Railway Station, Kalyan East, Maharashtra 421306",
+  slots: 120,
+  lat: 19.2403,
+  lng: 73.1309
+},
+
+{
+  id: 24,
+  name: "Metro Junction Mall Parking",
+  address: "Netivali, Kalyan East, Maharashtra 421306",
+  slots: 180,
+  lat: 19.2308,
+  lng: 73.1348
+},
+
+{
+  id: 25,
+  name: "Godrej Hill Parking",
+  address: "Godrej Hill, Khadakpada, Kalyan West, Maharashtra 421301",
+  slots: 90,
+  lat: 19.2574,
+  lng: 73.1185
+},
+
+{
+  id: 26,
+  name: "Ambernath Railway Parking",
+  address: "Near Ambernath Railway Station, Ambernath East, Maharashtra 421501",
+  slots: 100,
+  lat: 19.2095,
+  lng: 73.1867
+},
+
+{
+  id: 27,
+  name: "Shiv Mandir Parking",
+  address: "Shiv Mandir Road, Ambernath East, Maharashtra 421501",
+  slots: 45,
+  lat: 19.2047,
+  lng: 73.1891
+},
+
+{
+  id: 28,
+  name: "Anand Nagar Parking",
+  address: "Anand Nagar, Ambernath West, Maharashtra 421505",
+  slots: 55,
+  lat: 19.1978,
+  lng: 73.1743
+},
+
+{
+  id: 29,
+  name: "Badlapur Railway Station Parking",
+  address: "Near Badlapur Railway Station, Badlapur West, Maharashtra 421503",
+  slots: 130,
+  lat: 19.1546,
+  lng: 73.2654
+},
+
+{
+  id: 30,
+  name: "Belavali Parking Area",
+  address: "Belavali, Badlapur West, Maharashtra 421503",
+  slots: 70,
+  lat: 19.1703,
+  lng: 73.2458
+},
+
+{
+  id: 31,
+  name: "MCGM Public Pay and Park",
+  address: "Veena Nagar, Mulund West, Mumbai, Maharashtra 400080",
+  slots: 120,
+  lat: 19.1724,
+  lng: 72.9550
+},
+
+{
+  id: 32,
+  name: "Parking @ Nirmal Lifestyle",
+  address: "Moti Nagar, Mulund Colony, Mulund West, Mumbai, Maharashtra 400080",
+  slots: 180,
+  lat: 19.1715,
+  lng: 72.9572
+},
+
+{
+  id: 33,
+  name: "Here Gigaplex Car Parking",
+  address: "Airoli Knowledge Park Road, TTC Industrial Area, Airoli, Navi Mumbai, Maharashtra 400708",
+  slots: 250,
+  lat: 19.1549,
+  lng: 72.9984
+}
+];
+
+function initMap() {
+  map = new google.maps.Map(
+    document.getElementById("map"),
+    {
+      center: { lat: 19.2360, lng: 73.1290 },
+      zoom: 14
+    }
+  );
+
+  const trafficLayer = new google.maps.TrafficLayer();
+  trafficLayer.setMap(map);
+
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer ({
+
+  polylineOptions: {
+    strokeColor: "#7ece22",   // Lime green "#7ece22"
+    strokeOpacity: 1,
+    strokeWeight: 6
+  },
+  suppressMarkers: true,
+  preserveViewport: true
+});
+
+  directionsRenderer.setMap(map);
+
+  loadParkingMarkers();
+  getCurrentLocation();
+
+}
+     
+
+function getCurrentLocation() {
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            userMarker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: "Your Location",
+
+            icon: {
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 7,
+            fillColor: "#4285F4",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+            rotation: 0
+  }
+});
+
+            map.setCenter(userLocation);
+            startNavigationTracking();
+
+        },
+        function() {
+            alert("Unable to access location");
+        }
+    );
+}
+
+
+function startNavigationTracking() {
+
+  navigator.geolocation.watchPosition(
+
+    function(position) {
+
+      const currentPos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+
+      userLocation = currentPos;
+
+      userMarker.setPosition(currentPos);
+
+      if (navigationStarted) {
+      map.panTo(currentPos);
+      map.setZoom(19);
+      map.setTilt(0);
+      }
+
+
+      if (previousPos) {
+
+        const heading =
+          google.maps.geometry.spherical.computeHeading(
+            previousPos,
+            currentPos
+          );
+
+        userMarker.setIcon({
+          path:
+            google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+
+          scale: 7,
+          fillColor: "#3E6B11",
+          fillOpacity: 1,
+          strokeColor: "#2F520C",
+          strokeWeight: 2,
+          rotation: heading
+        });
+      }
+
+      previousPos = currentPos;
+    },
+
+    function(error) {
+      console.log(error);
+    },
+
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0
+    }
+  );
+}
+
+
+function loadParkingMarkers() {
+    parkingLots.forEach(parking => {
+        const marker = new google.maps.Marker({
+            position: {
+                lat: parking.lat,
+                lng: parking.lng
+            },
+            map: map,
+            title: parking.name,
+            icon: {
+                url: "images/SPS-Map-logo2.png",
+                scaledSize: new google.maps.Size(50, 50)
+            }
+        });
+
+        marker.addListener("click", function () {
+            selectedParking = parking;
+
+            document.getElementById("parkingName").innerText = parking.name;
+            document.getElementById("parkingAddress").innerText = "📍 " + parking.address;
+            document.getElementById("parkingSlots").innerText = "🅿 Available Slots: " + parking.slots;
+
+            directionsService.route(
+            { origin: userLocation,
+              destination: {
+              lat: parking.lat,
+              lng: parking.lng
+            },
+            travelMode: google.maps.TravelMode.DRIVING
+            },
+
+
+           function(result, status) {
+
+            if (status === "OK") {
+
+            window.cachedRoute = result;
+
+            // Show the travel card
+            document.getElementById("travelCard").classList.add("show");
+
+            // Get distance and duration
+            const leg = result.routes[0].legs[0];
+
+            document.getElementById("distance").innerHTML =
+                "📍 " + leg.distance.text;
+
+            document.getElementById("duration").innerHTML =
+                "⏱️ " + leg.duration.text;
+          }
+          } 
+         );
+      });
+  });
+}
+
+
+
+document
+.getElementById("navigateBtn")
+.addEventListener(
+    "click",
+    function() {
+
+        if (!selectedParking) {
+            alert(
+                "Please select a parking lot."
+            );
+            return;
+        }
+}  
+);
+function navigateToParking() {
+
+    if (!selectedParking) {
+        alert("Please select a parking lot first.");
+        return;
+    }
+
+     if (window.cachedRoute) {
+        directionsRenderer.setDirections(
+            window.cachedRoute
+        );
+
+        document.getElementById(
+            "startBtn"
+        ).style.display = "block";
+
+        return;
+    }
+        
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+
+            const userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            console.log("User:", userLocation);
+            console.log("Destination:", selectedParking);
+
+            directionsService.route(
+                {
+                    origin: userLocation,
+                    destination: {
+                        lat: selectedParking.lat,
+                        lng: selectedParking.lng
+                    },
+                    travelMode: google.maps.TravelMode.DRIVING
+                },
+                function (result, status) {
+
+                    console.log("Status:", status);
+
+                    if (status === "OK") {
+
+                     directionsRenderer.setDirections(result);
+
+                     document.getElementById(
+                     "startBtn"
+                    ).style.display = "block";
+                   }
+                    else {
+                        alert("Route Error: " + status);
+                    }
+                }
+            )
+          },
+        function (error) {
+            console.log(error);
+            alert("Could not get your location.")
+        }
+    )      
+}
+ 
+
+document
+.getElementById("startBtn")
+.addEventListener(
+  "click",
+  function() {
+
+        map.setZoom(18);
+
+        navigationStarted = true;
+
+        localStorage.setItem(
+        "activeNavigation",
+        JSON.stringify({
+            name: selectedParking.name,
+            lat: selectedParking.lat,
+            lng: selectedParking.lng
+        })
+    );
+
+       if (userLocation) {
+        map.setCenter(userLocation);
+        map.setZoom(19);
+        map.setTilt(0);
+      }
+
+      setTimeout(() => {
+      map.setCenter(userLocation);
+      map.setZoom(19);
+      map.setTilt(0);
+      }, 100);
+
+      navigationStarted = true;
+
+      document.getElementById("stopBtn").style.display = "block";
+      document.getElementById("startBtn").style.display = "none";
+
+      },
+      function(error) {
+        console.log(error);
+      },
+      {
+        enableHighAccuracy: true
+      }
+    );
+
+
+    document.getElementById("stopBtn")
+.addEventListener("click", function () {
+
+    navigationStarted = false;
+
+    // Remove route
+    directionsRenderer.setDirections({
+        routes: []
+    });
+
+    // Zoom out
+     // Smooth zoom out
+    let currentZoom = map.getZoom();
+
+    const zoomOut = setInterval(() => {
+        if (currentZoom <= 14) {
+            clearInterval(zoomOut);
+            return;
+        }
+
+        currentZoom--;
+        map.setZoom(currentZoom);
+
+    }, 150); // decrease for slower animation
+    // try 100, 150 or 200
+
+    // Center on user
+    if (userLocation) {
+        map.panTo(userLocation);
+    }
+
+    // Hide buttons
+    document.getElementById("stopBtn").style.display = "none";
+    document.getElementById("startBtn").style.display = "none";
+
+    // Clear saved navigation
+    localStorage.removeItem("activeNavigation");
+
+    // Optional
+    selectedParking = null;
+    window.cachedRoute = null;
+});
+
+
+
+window.onload = function () {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("floating") === "true") {
+        document.getElementById("infoBox").style.display = "none";
+    }
+};
+
+
+
+
+const icons = document.querySelectorAll(".travel-icon");
+
+icons.forEach(icon => {
+
+    icon.addEventListener("click", function(){
+
+      console.log(this.dataset.mode);
+
+      icons.forEach(i=>i.classList.remove("active"));
+
+      this.classList.add("active");
+
+      calculateRoute(this.dataset.mode);
+
+    });
+
+});
+
+
+
+
+const slider = document.querySelector(".slider");
+const icon = document.querySelectorAll(".travel-icon");
+
+function moveSlider(icon){
+
+    slider.style.width = icon.offsetWidth + "px";
+
+    slider.style.left = icon.offsetLeft + "px";
+
+}
+
+moveSlider(document.querySelector(".travel-icon.active"));
+
+icons.forEach(icon => {
+
+    icon.addEventListener("click", function(){
+
+        icons.forEach(i => i.classList.remove("active"));
+
+        this.classList.add("active");
+
+        moveSlider(this);
+
+        calculateRoute(this.dataset.mode);
+
+    });
+
+});
+
+
+
+function calculateRoute(mode) {
+
+  const request = {
+    origin: userLocation,
+    destination: {
+      lat: selectedParking.lat,
+      lng: selectedParking.lng
+  },
+   travelMode: google.maps.TravelMode[mode],
+   provideRouteAlternatives: true
+  };
+  
+
+    // Live traffic only for driving
+    if (mode === "DRIVING") {
+      request.drivingOptions = {
+        departureTime: new Date(),
+        trafficModel: google.maps.TrafficModel.BEST_GUESS
+      };
+    }
+
+    directionsService.route(request, function(result, status) {
+
+    if (status === "OK") {
+
+    window.cachedRoute = result;
+
+    directionsRenderer.setDirections(result);
+
+    const bestLeg = result.routes[0].legs[0];
+
+     document.getElementById("distance").innerHTML =
+     "📍 " + bestLeg.distance.text;
+
+    if (mode === "DRIVING" && bestLeg.duration_in_traffic) {
+      document.getElementById("duration").innerHTML =
+      "⏱️ " + bestLeg.duration_in_traffic.text;
+    }
+     else {
+        document.getElementById("duration").innerHTML =
+        "⏱️ " + bestLeg.duration.text;
+      }
+    }
+    else {
+      console.log(status);
+    }
+  });
+}
+</script>

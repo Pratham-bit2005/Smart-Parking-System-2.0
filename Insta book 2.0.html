@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Parking Booking</title>
+<style>
+    :root {
+  --accent: #ceff00;
+  --accent-glow: rgba(206,255,0,0.45);
+  --bg: #0a0a0a;
+  --card: #111;
+  --border: rgba(206,255,0,0.25);
+}
+ 
+* { box-sizing: border-box; margin:0; padding:0; }
+ 
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(New\ background\ image.png);
+}
+ 
+.booking-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 36px 32px;
+  width: 400px;
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(204, 255, 0, 0.336);
+}
+ 
+h2 {
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 24px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+ 
+label {
+  color: #aaa;
+  font-weight: 600;
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+ 
+  input {
+  width: 100%;
+  padding: 11px 14px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(206,255,0,0.2);
+  background: rgba(0, 0, 0, 0.04);
+  color: #ceff00;
+  outline: none;
+  caret-color: #ceff00;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.select-box {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(206,255,0,0.2);
+  background: rgba(0, 0, 0, 0.04);
+  color: #7e7e7e;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.select-box:hover,
+.select-box.active {
+  border-color: #ceff00;
+  box-shadow: 0 0 10px rgba(206,255,0,0.3);
+}
+
+.arrow {
+  color: #ceff00;
+  font-size: 20px;
+  line-height: 0;
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  width: 100%;
+  background: #111;
+  border: 1px solid rgba(206,255,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+  display: none;
+  z-index: 999;
+  box-shadow: 0 0 20px rgba(206,255,0,0.15);
+  /* Prevent page from extending */
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 10px 13px;
+  color: #ceff00;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-option:hover {
+  background: #ceff00;
+  color: #000;
+}
+ 
+select:focus, input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(206,255,0,0.3);
+}
+ 
+.dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background: #ceff00;
+  border-radius: 10px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    padding-right: 15px; /* space for arrow */
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #1a1a1a;
+    color: #ceff00;
+    outline: none;
+    caret-color: #00bfff;
+    box-sizing: border-box; /* keeps width aligned */
+
+
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ceff00' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+ 
+
+.btn {
+  width: 100%;
+  padding: 13px;
+  margin-top: 20px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 15px;
+  transition: 0.3s;
+  letter-spacing: 0.2px;
+}
+ 
+.btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+ 
+.Payment-options {
+  display: none;
+  margin-top: 14px;
+  animation: fadeIn 0.4s ease-in-out;
+}
+ 
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+ 
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(100%) sepia(100%) saturate(1000%) hue-rotate(60deg);
+  cursor: pointer;
+}
+
+select:focus, input:focus {
+  border-color: #ceff00;
+  box-shadow: 0 0 8px #ceff00;
+}
+ 
+.notification {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #000;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-weight: 800;
+  display: none;
+  box-shadow: 0 0 24px var(--accent-glow);
+  white-space: nowrap;
+  font-size: 14px;
+  z-index: 999;
+}
+
+
+.booking-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 35px;
+    min-height: 100vh;
+    flex-wrap: wrap;
+}
+
+.price-box {
+    width: 280px;
+    background: #111;
+    border: 1px solid rgba(206,255,0,0.3);
+    border-radius: 15px;
+    padding: 25px;
+    color: white;
+    box-shadow: 0 0 30px rgba(206,255,0,0.25);
+}
+
+.price-box h3 {
+    color: #ceff00;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    font-size: 15px;
+}
+
+.total {
+    color: #ceff00;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.price-box hr {
+    border: none;
+    height: 1px;
+    background: rgba(206,255,0,0.3);
+    margin: 15px 0;
+}
+</style>
+</head>
+
+
+
+
+
+
+<body>
+    
+<div class="booking-wrapper">
+
+
+<div class="booking-container">
+<h2>Smart Parking Booking</h2>
+
+<form>
+    <label>Your Name
+    <input type="text" id="bookedcustomer">
+    </label>
+
+    <label>Select Parking Slot
+    <input type="number" id="slotNumber" min="1" max="24" required />
+    </label>
+
+
+     <label>SELECT VEHICLE TYPE</label>
+    <div class="custom-select" id="vehicleDropdown">
+  <div class="select-box" id="vehicleBox">
+    <span id="vehicleText">Choose Vehicle</span>
+    <span class="arrow">&#9662;</span>
+  </div>
+
+  <div class="dropdown-options" id="vehicleOptions">
+    <div class="dropdown-option" data-value="">Choose Vehicle</div>
+    <div class="dropdown-option" data-value="Bike">Bike</div>
+    <div class="dropdown-option" data-value="Car">Car</div>
+    <div class="dropdown-option" data-value="SUV">SUV</div>
+    <div class="dropdown-option" data-value="Sedan">Sedan</div>
+    <div class="dropdown-option" data-value="Electric Bike">Electric Bike</div>
+    <div class="dropdown-option" data-value="Electric Car">Electric Car</div>
+  </div>
+
+  <!-- Hidden field -->
+  <input type="hidden" id="VehicleType" value="">
+</div>
+
+
+    <label>Select duration</label>
+    <input type="number" id="ParkingDuration" min="1" max="24"
+    placeholder="Enter hours" required>
+
+    <button type="button" class="btn" onclick="showPayment()">
+    Choose Payment Option
+    </button>
+
+    <div class="Payment-options" id="paymentBox">
+        <label>Select Payment Method</label>
+        <select id="PaymentMethod" required>
+          <option value="">-- Choose Payment --</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+          <option>UPI</option>
+          <option>Net Banking</option>
+          <option>Cash</option>
+        </select>
+
+
+    <button type="button" class="btn" onclick="confirmBooking()">
+    Confirm Booking
+    </button>
+ </div>  
+  </form>
+</div>
+
+<div class="price-box" id="priceBox">
+        <h3>Booking Summary</h3>
+
+        <div class="price-row">
+            <span>Rate per Hour</span>
+            <span>₹100</span>
+        </div>
+
+        <div class="price-row">
+            <span>Duration</span>
+            <span id="durationText">0 Hours</span>
+        </div>
+
+        <div class="price-row">
+            <span>Subtotal</span>
+            <span id="subtotal">₹0</span>
+        </div>
+
+        <div class="price-row">
+            <span>GST (18%)</span>
+            <span id="gst">₹0</span>
+        </div>
+
+        <hr>
+
+        <div class="price-row total">
+            <span>Total</span>
+            <span id="total">₹0</span>
+        </div>
+    </div>
+
+</div>
+
+
+<div id="notification" class="notification">
+    Slot Booked Successfully!
+</div>
+
+
+
+
+
+
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+authDomain: "smart-parking-73e2f.firebaseapp.com",
+databaseURL: "https://smart-parking-73e2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "smart-parking-73e2f",
+storageBucket: "smart-parking-73e2f.firebasestorage.app",
+messagingSenderId: "677685611894",
+appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+};
+
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+
+// Show payment
+function showPayment() {
+document.getElementById("paymentBox").style.display = "block";
+}
+
+
+const vehicleBox = document.getElementById("vehicleBox");
+const vehicleOptions = document.getElementById("vehicleOptions");
+const vehicleText = document.getElementById("vehicleText");
+const vehicleInput = document.getElementById("VehicleType");
+
+vehicleBox.addEventListener("click", () => {
+  vehicleOptions.style.display =
+    vehicleOptions.style.display === "block"
+      ? "none"
+      : "block";
+
+  vehicleBox.classList.toggle("active");
+});
+
+document.querySelectorAll(".dropdown-option").forEach(option => {
+  option.addEventListener("click", () => {
+    vehicleText.textContent = option.textContent;
+    vehicleInput.value = option.dataset.value;
+    vehicleOptions.style.display = "none";
+    vehicleBox.classList.remove("active");
+
+    if (option.dataset.value !== "") {
+      vehicleText.style.color = "#ceff00";
+    } else {
+      vehicleText.style.color = "#7e7e7e";
+    }
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (!document.getElementById("vehicleDropdown").contains(e.target)) {
+    vehicleOptions.style.display = "none";
+    vehicleBox.classList.remove("active");
+  }
+});
+
+
+
+const durationInput = document.getElementById("ParkingDuration");
+
+durationInput.addEventListener("input", updatePrice);
+
+let total = 0;
+
+function updatePrice() {
+
+    const hours = Number(durationInput.value) || 0;
+
+    const pricePerHour = 100;
+    const subtotal = hours * pricePerHour;
+    const gst = subtotal * 0.18;
+
+    // Update global total variable
+    total = subtotal + gst;
+
+    document.getElementById("durationText").innerText =
+        hours + " Hour" + (hours !== 1 ? "s" : "");
+
+    document.getElementById("subtotal").innerText =
+        "₹" + subtotal.toFixed(2);
+
+    document.getElementById("gst").innerText =
+        "₹" + gst.toFixed(2);
+
+    document.getElementById("total").innerText =
+        "₹" + total.toFixed(2);
+}
+
+
+
+function confirmBooking() {
+
+let slot = document.getElementById("slotNumber").value;
+let VehicleType = document.getElementById("VehicleType").value;
+let ParkingDuration = document.getElementById("ParkingDuration").value;
+let payment = document.getElementById("PaymentMethod").value;
+let bookedcustomer = document.getElementById("bookedcustomer").value;
+
+
+// Check if any field is empty
+if (slot === "" || bookedcustomer === "") {
+    alert("⚠ Incomplete form. Kindly fill in all required details before proceeding with the booking.");
+    return;
+}
+
+// Your Name Validation
+if (!/^[A-Za-z]+ [A-Za-z]+$/.test(bookedcustomer.trim())) {
+    alert("⚠  Please enter a valid full name to continue.");
+    return;
+}
+
+// Slot validation
+if (slot < 1 || slot > 24) {
+    alert("⚠ Slot number must be between 1 and 24");
+    return;
+}
+
+// Payment validation
+if (payment === "") {
+    alert("⚠ Please choose payment method");
+    return;
+}
+
+// vehicleType validation
+if (VehicleType === "") {
+    alert("⚠ Please choose appropraite vehicle type");
+    return;
+}
+
+// parkingDuration validation
+if (ParkingDuration === "") {
+    alert("⚠ Please choose appropraite parking Duration");
+    return;
+}
+
+
+
+
+// 🔥 SAVE TO FIREBASE HERE
+let safeName = bookedcustomer.trim().replace(/\s+/g, "_");
+
+if (safeName === "") {
+    alert("Enter name");
+    return;
+}
+
+let userRef = database.ref("bookings/" + safeName);
+
+userRef.once("value")
+.then(function(snapshot) {
+
+let count = snapshot.exists() ? snapshot.numChildren() : 0;
+let bookingNumber = "Booking" + (count + 1);
+
+console.log("🔥 Creating:", bookingNumber);
+
+return userRef.child(bookingNumber).set({
+    slot: slot,
+    VehicleType: VehicleType,
+    ParkingDuration: ParkingDuration + " Hours",
+    PaymentMethod: payment,
+    TotalPrice: "₹" + total.toFixed(2),
+
+    bookedAt: new Date().toLocaleString()
+});
+})
+
+.then(() => {
+    console.log("✅ Saved successfully");
+})
+
+.catch((error) => {
+    console.error("❌ Error:", error);
+})
+
+.then(() => {
+    // Show notification
+    let notification = document.getElementById("notification");
+
+    notification.innerText = "Slot " + slot + " has been booked successfully!";
+    notification.style.display = "block";
+
+    setTimeout(function () {
+        notification.style.display = "none";
+    }, 3000);
+
+    // Reset form
+    document.querySelector("form").reset();
+    document.getElementById("paymentBox").style.display = "none";
+})
+};
+</script>
+
+</body>
+</html>

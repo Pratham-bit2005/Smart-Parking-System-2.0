@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Font Awesome for eye icon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<body> 
+<!-- Enter Screen -->
+<div id="enter-screen">
+  <h1><span class="text1">PARK</span><span class="text2">EAZE</span></h1>
+    <h3> --- THE FUTURE OF PARKING ---</h3>
+    <p class="slogan">Smart  Secure  Seamless</span></P>
+    <button id="enter-btn">ENTER</button>
+</div>
+
+
+<!-- Intro Screen -->
+<div id="intro-screen">
+    <video id="intro-video" autoplay playsinline preload="auto">
+        <source src="Enhanced Basic Model.mp4" type="video/mp4">
+    </video>
+</div>
+
+
+
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Smart Parking</div>
+
+    <div class="nav-links">
+        <input type="text" id="searchInput" placeholder="Search here..." class="search-box" 
+        onkeydown="if(event.key === 'Enter') searchPage()">
+        
+        <a href="About us 2.0.html">About Us</a>
+        <a href="Services 2.0.html">Services</a>
+        <a href="Contact us 2.0.html">Contact Us</a>
+
+        <button type="button" class="nav-btn" id="SignupNavBtn" onclick="openSignup()">Sign Up</button>
+        <button type="button" class="nav-btn" id="LoginNavBtn" onclick="openLogin()">Login</button>
+        <img src="" alt="Profile" id="profileAvatar" class="profile-avatar" style="display:none;">
+   
+
+
+     <!-- Profile icon container -->
+      <div id="profileContainer" style="display:none;">
+        <img id="profileImg" src="Profile image.png" class="profile-icon">
+
+        <div id="profileDropdown" style="display:none;">
+        <a href="Manage Account2.0.html">Manage Account</a>
+        <Button id="logoutBtn">Logout</Button>
+       </div>
+      </div>
+ </div>
+
+    <div class="dropdown" id="dropdown">
+        <div class="menu-icon" onclick="toggleDropdown()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <div class="dropdown-content">
+            <a href="Booking History2.0.html">Booking History</a>
+            <a href="Transaction History2.0.html">Transaction History</a>
+            <a href="#" onclick="goToHowItWorks(event)">How It Works</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Smart Parking System</h1>
+    <p>Find, Book, and Manage Parking Spaces in Real-Time with Intelligent Technology</p>
+    <a  href="3D Model2.0.html">Book Your Slot Now</a>
+
+  <div class="button-container"> 
+    <button class="Dashboard" id="dashboardBtn"> Dashboard </button>
+    <button class="Electric" id="EVBtn">EV Charging</button>
+  </div>
+
+</section>
+
+
+<!-- FEATURES -->
+ 
+<!-- System Statics Section -->
+<section class="Section3">
+<h2 class="">System Statistics</h2>
+
+<div class="stats-container">
+
+<div class="stat-card">
+  <h3 class="counter" data-target="1250">0</h3>
+  <p>Total Active Users</p>
+</div>
+
+<div class="stat-card">
+  <h3 class="counter" data-target="24">0</h3>
+  <p>Total Parking Slots</p>
+</div>
+
+<div class="stat-card">
+  <h3 class="counter" data-target="550">0</h3>
+  <p>Total Bookings Today</p>
+</div>
+
+<div class="stat-card">
+  <h3 class="counter" data-target="99"
+  data-symbol="%">0</h3>
+  <p>Total Users Satisfaction</p>
+</div>
+
+<div class="stat-card">
+  <h3 class="counter" data-target="45">0</h3>
+  <p>Total Security Cameras</p>
+</div>
+
+<div class="stat-card">
+  <h3 class="counter" data-target="12">0</h3>
+  <p>Total Parking Locations</p>
+</div>
+
+</div>
+</section>
+
+
+
+
+<!-- Why Choose Us -->
+<section class="section1">
+<h2>Why Choose Us</h2>
+<div class="features">
+
+<div class="card">
+  <h3>Real-Time Availability</h3>
+  <p>Check live parking slot status instantly.</p>
+</div>
+
+<div class="card">
+  <h3>Smart Booking</h3>
+  <p>Reserve parking spaces with ease.</p>
+</div>
+
+<div class="card">
+  <h3>Secure Payments</h3>
+  <p>Safe and seamless digital transactions.</p>
+</div>
+
+<div class="card">
+  <h3>Eco-Friendly Solution</h3>
+  <p>Reduce fuel usage and congestion.</p>
+</div>
+
+<div class="card">
+  <h3>AI Slot Prediction</h3>
+  <p>Predict availability using smart analytics.</p>
+</div>
+
+<div class="card">
+  <h3>24/7 Monitoring</h3>
+  <p>Continuous surveillance for safety.</p>
+</div>
+</div>
+</section>
+
+
+
+
+<!-- How It Works Section -->
+<section class="section2" id="howItWorks">
+<h2 id="howTitle">How It Works</h2>
+<div class="scroll-wrapper">
+<button class="scroll-btn left-btn">&#10094;</button>
+
+<div class="scroll-container" id="scrollContainer">
+
+<div class="work-card">
+  <h3>1️⃣ Search Parking</h3>
+  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70" alt="Car">
+
+    <p>
+    Finding a parking space has never been<br>easier. Our Smart Parking System allows 
+    our users to search nearby locations in real time using intelligent tracking and 
+    live availability updates. This helps reduce traffic congestion and saves valuable 
+    time for drivers.
+    </p>
+</div>
+
+<div class="work-card">
+  <h3>2️⃣ Check Availability</h3>
+  <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7" alt="Car">
+
+    <p>
+    Users can instantly view available, occupied, and reserved parking slots through 
+    our real-time database system. The information gets updated automatically to ensure 
+    complete accuracy. This transparency allows our users to make quick and confident 
+    decisions.
+    </p>
+</div>
+
+<div class="work-card">
+  <h3>3️⃣ Book Slot</h3>
+  <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a" alt="Car">
+
+    <p>
+    With just a few clicks, our users can securely reserve their preferred parking space 
+    for a selected time period. Our system properly ensures that the slot remains reserved 
+    only for the user. Our Authentication and booking confirmation make the process 
+    reliable and safe for the user.
+    </p>
+</div>
+
+<div class="work-card">
+  <h3>4️⃣ Scan & Enter</h3>
+  <img src="https://images.unsplash.com/photo-1549924231-f129b911e442" alt="Car">
+
+    <p>
+    At the parking entrance, users can scan a QR code or they can use the Automatic 
+    Number Plate Recognition for verification. The system validates bookings instantly
+    without manual checking. his enables smooth and completely contactless vehicle entry.
+    </p>
+</div>
+
+<div class="work-card">
+  <h3>5️⃣ Exit Smoothly</h3>
+  <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c" alt="Car">
+
+    <p>
+    Once the parking session ends, the system automatically calculates the duration of the 
+    session and billing amount. The Payments are processed securely and efficiently. Users 
+    can exit the parking area quickly without any unnecessary waiting.
+    </p>
+</div>
+
+</div>
+
+  <button class="scroll-btn right-btn">&#10095;</button>
+
+  </div>
+</section>
+
+
+
+
+<!-- Technologies Used -->
+<section class="Section4">
+<h2>Technologies Used</h2>
+
+<div class="tech-container">
+
+<div class="tech-card">
+  <h3>Frontend Development</h3>
+  <p>HTML5, CSS3 and JavaScript are used to design a 
+  responsive and interactive user interface.
+  </p>
+</div>
+
+<div class="tech-card">
+  <h3>Backend Integration</h3>
+  <p>JavaScript-based logic handles booking validation, 
+  authentication and dynamic content updates.
+  </p>
+</div>
+
+<div class="tech-card">
+  <h3>Database Management</h3>
+  <p>Firebase Realtime Database stores user details, 
+  parking slots and booking information securely.
+  </p>
+</div>
+
+<div class="tech-card">
+  <h3>User Authentication</h3>
+  <p>Firebase Authentication ensures secure login and 
+  user identity verification.
+  </p>
+</div>
+
+<div class="tech-card">
+  <h3>Real-Time Updates</h3>
+  <p>Live slot availability and booking status are 
+  updated instantly using cloud-based services.
+  </p>
+</div>
+
+<div class="tech-card">
+  <h3>Security Monitoring</h3>
+  <p>Integrated CCTV monitoring system enhances safety
+  and provides secure parking experience.
+  </p>
+</div>
+
+</div>
+</section>
+
+
+
+
+<div class="footer">
+    © 2026 Smart Parking System | All Rights Reserved
+</div>
+
+<!-- LOGIN POPUP -->
+<div class="popup" id="loginPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closeLogin()">&times;</span>
+        <h3>Login</h3>
+        <input id="LoginEmail" type="email" placeholder="Email">
+        <div class="password-field">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <!-- FIXED ID HERE -->
+            <i class="fa-solid fa-eye" onclick="togglePassword('loginPassword', this)"></i>
+        </div>
+        <button class="Btn" id="LoginBtn">Login</button>
+    </div>
+</div>
+
+<!-- SIGNUP POPUP -->
+<div class="popup" id="signupPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closeSignup()">&times;</span>
+        <h3>Sign Up</h3>
+        <input id="SignupName" type="text" placeholder="Full Name">
+        <input id="SignupEmail" type="email" placeholder="Email">
+        <div class="password-field">
+            <input type="password" id="SignupPassword" placeholder="Password">
+            <i class="fa-solid fa-eye" onclick="togglePassword('SignupPassword', this)"></i>
+        </div>
+        <button class="Btn" id="SignupBtn">Create Account</button>
+    </div>
+</div>
+
+
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+  authDomain: "smart-parking-73e2f.firebaseapp.com",
+  projectId: "smart-parking-73e2f",
+  storageBucket: "smart-parking-73e2f.appspot.com",
+  messagingSenderId: "677685611894",
+  appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// 🌍 GLOBAL NAV VARIABLES
+let profileContainer;
+let profileImg;
+let LoginNavBtn;   // ✅ lowercase only
+let logoutBtn;
+
+
+document.getElementById("dashboardBtn").addEventListener("click", function () {
+    window.open("http://localhost:8080/", "_blank");
+});
+
+document.getElementById("EVBtn").addEventListener("click", function () {
+    window.open("http://localhost:8080/", "_blank");
+});
+
+
+// 🔹 WAIT FOR DOM
+document.addEventListener("DOMContentLoaded", () => {
+
+  profileContainer = document.getElementById("profileContainer");
+  profileImg = document.getElementById("profileImg");
+  LoginNavBtn = document.getElementById("LoginNavBtn");
+  logoutBtn = document.getElementById("logoutBtn");
+
+  const signupBtn = document.getElementById("SignupBtn");
+  const loginBtn = document.getElementById("LoginBtn");
+
+  const profileMenu = document.getElementById("profileDropdown");
+
+profileImg.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    profileMenu.style.display =
+        profileMenu.style.display === "block"
+            ? "none"
+            : "block";
+});
+
+document.addEventListener("click", () => {
+    profileMenu.style.display = "none";
+});
+
+
+  // ---------------- SIGNUP ----------------
+  if (signupBtn) {
+    signupBtn.addEventListener("click", async () => {
+      try {
+        const fullName = document.getElementById("SignupName").value;
+        const email = document.getElementById("SignupEmail").value;
+        const password = document.getElementById("SignupPassword").value;
+
+        const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+        );
+
+      await updateProfile(userCredential.user, {
+      displayName: fullName
+      });
+
+      // Save full name locally
+     localStorage.setItem(
+     userCredential.user.email + "_fullName",
+     fullName
+     );
+
+       // Refresh the user
+      await userCredential.user.reload();
+
+      // Read the refreshed user
+      const authUser = auth.currentUser;
+
+      console.log(authUser.displayName);
+
+        // Sign the user out immediately
+        await signOut(auth);
+        
+       alert("Account created successfully!\nPlease login to continue.");
+       closeSignup();
+
+      } catch (error) {
+        console.error(error);
+        alert("Signup failed: " + error.message);
+      }
+    });
+  }
+
+  // ---------------- LOGIN ----------------
+  if (loginBtn) {
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const email = document.getElementById("LoginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        await signInWithEmailAndPassword(auth, email, password);
+
+        alert("Login successful!");
+        closeLogin();
+
+      } catch (error) {
+        console.error(error);
+        alert("Login failed: " + error.message);
+      }
+    });
+  }
+
+
+
+ // ---------------- LOGOUT ----------------
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      profileContainer.style.display = "none";
+      LoginNavBtn.style.display = "inline-block";
+
+       // Hide logout button
+       logoutBtn.style.display = "none";
+    });
+  }
+});
+
+
+
+// ---------------- SHOW PROFILE ----------------
+function showProfile(user) {
+  const profileContainer = document.getElementById("profileContainer");
+  const LoginNavBtn = document.getElementById("LoginNavBtn");
+  const profileImg = document.getElementById("profileImg");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (!profileContainer || !LoginNavBtn || !profileImg) {
+    console.error("Navbar elements missing!");
+    return;
+  }
+
+  profileContainer.style.display = "inline-block";
+  LoginNavBtn.style.display = "none";
+
+
+    // Show logout button
+    logoutBtn.style.display = "inline-block";
+
+  profileImg.src =
+    user.photoURL ||
+    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+}
+
+
+
+// ---------------- AUTH STATE ----------------
+onAuthStateChanged(auth, (user) => {
+  const profileContainer = document.getElementById("profileContainer");
+  const LoginNavBtn = document.getElementById("LoginNavBtn");
+  console.log("User state:", user);
+  if (user) {
+    showProfile(user);
+  } else {
+    if (profileContainer) profileContainer.style.display = "none";
+    if (LoginNavBtn) LoginNavBtn.style.display = "inline-block";
+  }
+});
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>

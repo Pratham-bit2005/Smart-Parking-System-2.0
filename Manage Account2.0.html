@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+margin:0;
+background:#0a0a0a;
+font-family:Segoe UI;
+color:white;
+}
+
+/* FULL PAGE LAYOUT */
+.page{
+padding:40px;
+max-width:1100px;
+margin:auto;
+}
+
+/* HEADER */
+h1{
+text-align:left;
+color:#ceff00;
+margin-bottom:30px;
+}
+
+/* PROFILE TOP SECTION */
+.top-section{
+display:flex;
+align-items:center;
+gap:30px;
+padding-bottom:30px;
+border-bottom:1px solid rgba(206,255,0,.2);
+}
+
+.profile-wrapper{
+position:relative;
+width:120px;
+}
+
+#profileImage{
+width:120px;
+height:120px;
+border-radius:50%;
+object-fit:cover;
+border:4px solid #ceff00;
+}
+
+.edit-icon{
+position:absolute;
+bottom:5px;
+right:5px;
+width:35px;
+height:35px;
+border-radius:50%;
+background:#ceff00;
+color:black;
+display:flex;
+justify-content:center;
+align-items:center;
+cursor:pointer;
+}
+
+.user-info h2{
+margin:0;
+}
+
+.user-info p{
+opacity:0.7;
+}
+
+/* SECTION */
+.section{
+margin-top:30px;
+}
+
+.section h3{
+color:#ceff00;
+margin-bottom:15px;
+}
+
+/* INPUTS */
+input{
+width:100%;
+  box-sizing:border-box;
+  padding:14px 16px;
+margin-top:10px;
+background:#1b1b1b;
+border:none;
+border-radius:8px;
+color:white;
+}
+
+/* BUTTON */
+button{
+width:100%;
+margin-top:20px;
+padding:12px;
+background:#ceff00;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* OPTIONS GRID */
+.options{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.option{
+padding:15px;
+background:#1a1a1a;
+border-radius:8px;
+cursor:pointer;
+transition:.3s;
+}
+
+.option:hover{
+background:#ceff00;
+color:black;
+}
+
+.option i{
+margin-right:10px;
+}
+
+.logout{
+background:#3b1111;
+}
+
+.logout:hover{
+background:#ff4444;
+color:white;
+}
+
+.Booking-History{
+    text-decoration: none;
+    color: #fff;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<h1>My Account</h1>
+
+<!-- TOP PROFILE -->
+<div class="top-section">
+
+<div class="profile-wrapper">
+
+<img id="profileImage"
+src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+
+<label for="imageUpload" class="edit-icon">
+<i class="fa-solid fa-pencil"></i>
+</label>
+
+<input type="file" id="imageUpload" accept="image/*" hidden>
+
+</div>
+
+<div class="user-info">
+<h2 id="userName">Welcome User</h2>
+<p id="userEmail"></p>
+</div>
+
+</div>
+
+<!-- INFO -->
+<div class="section">
+<h3>Account Information</h3>
+
+<input type="text" id="fullName" placeholder="Full Name">
+<input type="text" id="phone" placeholder="Phone Number">
+<input type="text" id="address" placeholder="Address">
+
+<button>Save Information</button>
+</div>
+
+<!-- OPTIONS -->
+<div class="section">
+<h3>Quick Actions</h3>
+
+<div class="options">
+
+<div class="option"><i class="fa-solid fa-book"></i><a href="Booking History2.0.html" class="Booking-History">Booking History</a></div>
+<div class="option"><i class="fa-solid fa-credit-card"></i><a href="Transaction History2.0.html" class="Booking-History">Transaction History</a></div>
+
+<div class="option"  onclick="shareWebsite()"><i class="fa-solid fa-share-nodes"></i>Share Website</div>
+
+<div class="option logout"><i class="fa-solid fa-right-from-bracket"></i>Logout</div>
+
+</div>
+</div>
+
+</div>
+
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut,
+    updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+  authDomain: "smart-parking-73e2f.firebaseapp.com",
+  projectId: "smart-parking-73e2f",
+  storageBucket: "smart-parking-73e2f.appspot.com",
+  messagingSenderId: "677685611894",
+  appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+
+    
+
+    // ---------------- EMAIL ----------------
+
+    document.getElementById("userEmail").textContent = user.email;
+
+
+    // ---------------- FULL NAME ----------------
+
+    let fullName = localStorage.getItem(user.email + "_fullName");
+
+    if (!fullName || fullName.trim() === "") {
+
+        fullName = user.displayName;
+
+    }
+
+    // If still empty, create from email
+
+    if (!fullName || fullName.trim() === "") {
+
+        let username = user.email.split("@")[0];
+
+// remove numbers
+username = username.replace(/[0-9]/g, "");
+
+// split camel/combined words (important fix)
+username = username.replace(/([a-z])([A-Z])/g, "$1 $2");
+
+// split based on length heuristic (fix for prathamgharat case)
+username = username.replace(/([a-z]{4,})([a-z]{6,})/, "$1 $2");
+
+// capitalize properly
+username = username
+  .split(" ")
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(" ");
+
+fullName = username;
+    }
+
+    document.getElementById("userName").textContent = fullName;
+
+    document.getElementById("fullName").value = fullName;
+
+
+
+    // ---------------- PROFILE IMAGE ----------------
+
+    const savedImage =
+        localStorage.getItem(user.email + "_profileImage");
+
+    if(savedImage){
+
+        document.getElementById("profileImage").src = savedImage;
+
+    }else{
+
+        document.getElementById("profileImage").src =
+        user.photoURL ||
+        "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    }
+
+});
+
+
+
+// ---------------- PROFILE IMAGE UPLOAD ----------------
+
+const imageUpload = document.getElementById("imageUpload");
+const profileImage = document.getElementById("profileImage");
+
+imageUpload.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        // Show image immediately
+        profileImage.src = e.target.result;
+
+        // Save image in Local Storage
+        localStorage.setItem(user.email + "_profileImage", e.target.result);
+    };
+
+    reader.readAsDataURL(file);
+
+});
+
+</script>
+
+<script>
+
+    function shareWebsite() {
+     const websiteLink = "http://127.0.0.1:3000/Smart-Parking%202.0.html?vscode-livepreview=true:"; // Current website URL
+
+    navigator.clipboard.writeText(websiteLink)
+        .then(() => {
+            alert("✅ Website link copied to clipboard!");
+        })
+        .catch(() => {
+            alert("❌ Failed to copy link.");
+        });
+}
+
+</script>
+
+
+</body>
+</html>

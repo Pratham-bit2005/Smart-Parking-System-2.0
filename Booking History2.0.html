@@ -1,0 +1,187 @@
+
+<style>
+    body {
+    background: #0a0a0a;
+    font-family: Arial, sans-serif;
+}
+
+.history-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 50px auto;
+}
+
+.booking-card {
+    background: #111;
+    border: 1px solid rgba(206,255,0,0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(206,255,0,0.2);
+    transition: 0.3s;
+}
+
+.booking-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 30px rgba(206,255,0,0.4);
+}
+
+.card-header {
+    display: flex;
+    
+    align-items: center;
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(206,255,0,0.2);
+    padding-bottom: 12px;
+}
+
+.card-header h3 {
+    color: #ceff00;
+    margin: 0;
+}
+
+.status {
+    background: rgba(206,255,0,0.15);
+    color: #ceff00;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.card-body p {
+    color: #ceff00;
+    margin: 12px 0;
+    font-size: 15px;
+}
+
+.value{
+    color: #fff;
+}
+
+.card-body strong {
+    color: #ceff00;
+}
+
+.history-title {
+    background: rgba(121, 150, 9, 0.342);
+    color: #ceff00;
+    border: 1px solid rgba(206,255,0,0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(206,255,0,0.2);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.booking-no {
+    width: 38px;
+    height: 38px;
+    background: #ceff00;
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.card-header h3 {
+    flex: 1;
+    color: #ceff00;
+}
+
+.customer-name {
+    color: #ceff00;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: left;
+}
+</style>
+
+
+
+<div class="history-container">
+
+    <div class="history-title">
+        📋 Booking History
+    </div>
+
+    <div id="bookingCards"></div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+
+<script>
+
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyAelIyIkWTL3X9WYXLVl0b5MZ78HHZS_6g",
+  authDomain: "smart-parking-73e2f.firebaseapp.com",
+  databaseURL: "https://smart-parking-73e2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smart-parking-73e2f",
+  storageBucket: "smart-parking-73e2f.firebasestorage.app",
+  messagingSenderId: "677685611894",
+  appId: "1:677685611894:web:ecd2030d5b271bd3bffe57"
+  };
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+const container = document.getElementById("bookingCards");
+
+database.ref("bookings").once("value", snapshot => {
+
+    let count = 1;
+
+    snapshot.forEach(customer => {
+
+        const customerName = customer.key.replace(/_/g, " ");
+
+        customer.forEach(booking => {
+
+            const data = booking.val();
+
+            container.innerHTML += `
+                <div class="booking-card">
+
+                    <div class="card-header">
+                        <div class="booking-no">
+                            #${count}
+                        </div>
+
+                        <div class="customer-name">
+                        ${customerName}
+                       </div>
+                    </div>
+
+                    <div class="card-body">
+                    <p>🅿 Slot Number : <span class="value">${data.slot}</span></p>
+                    <p>⏱ Duration : <span class="value">${data.ParkingDuration}</span></p>
+                    <p>💰 Price : <span class="value">${data.TotalPrice}</span></p>
+                    </div>
+
+                </div>
+            `;
+
+            count++;
+
+        });
+
+    });
+
+});
+
+</script>
